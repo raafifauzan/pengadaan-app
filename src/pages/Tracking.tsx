@@ -1,102 +1,102 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge, ProcurementStatus } from "@/components/StatusBadge";
-import { CheckCircle, Circle, Clock } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Progress } from "@/components/ui/progress";
 
-const trackingData = [
+type TrackingItem = {
+  id: string;
+  title: string;
+  status: ProcurementStatus;
+  currentStage: string;
+  lastUpdate: string;
+  progress: number;
+};
+
+const mockTracking: TrackingItem[] = [
   {
-    id: "PR-001",
-    title: "Pengadaan Laptop Dell XPS 15",
-    status: "in_progress" as ProcurementStatus,
-    timeline: [
-      { step: "Pengajuan Dibuat", date: "15 Mar 2024", completed: true },
-      { step: "Review Manager", date: "16 Mar 2024", completed: true },
-      { step: "Approval Finance", date: "17 Mar 2024", completed: true },
-      { step: "Purchase Order", date: "18 Mar 2024", completed: false, current: true },
-      { step: "Delivery", date: "TBA", completed: false },
-      { step: "Selesai", date: "TBA", completed: false },
-    ],
+    id: "REQ-001",
+    title: "Pengadaan Laptop",
+    status: "in_progress",
+    currentStage: "Vendor Selection",
+    lastUpdate: "2024-01-15 14:30",
+    progress: 45,
   },
   {
-    id: "PR-003",
-    title: "Pengadaan Software Lisensi",
-    status: "completed" as ProcurementStatus,
-    timeline: [
-      { step: "Pengajuan Dibuat", date: "13 Mar 2024", completed: true },
-      { step: "Review Manager", date: "13 Mar 2024", completed: true },
-      { step: "Approval Finance", date: "14 Mar 2024", completed: true },
-      { step: "Purchase Order", date: "15 Mar 2024", completed: true },
-      { step: "Delivery", date: "16 Mar 2024", completed: true },
-      { step: "Selesai", date: "16 Mar 2024", completed: true },
-    ],
+    id: "REQ-002",
+    title: "Furniture Kantor",
+    status: "in_progress",
+    currentStage: "Budget Approval",
+    lastUpdate: "2024-01-16 09:15",
+    progress: 30,
+  },
+  {
+    id: "REQ-003",
+    title: "Peralatan Meeting",
+    status: "completed",
+    currentStage: "Delivered",
+    lastUpdate: "2024-01-14 16:45",
+    progress: 100,
+  },
+  {
+    id: "REQ-004",
+    title: "Software License",
+    status: "in_progress",
+    currentStage: "Form Evaluasi",
+    lastUpdate: "2024-01-17 11:20",
+    progress: 65,
   },
 ];
 
 export default function Tracking() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
-      <div className="container mx-auto p-6 space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Tracking Procurement</h1>
-          <p className="text-muted-foreground">Monitor progress pengadaan real-time</p>
-        </div>
+    <div className="p-8 space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold">Tracking Pengajuan</h1>
+        <p className="text-muted-foreground mt-1">
+          Monitor status dan progress pengajuan procurement
+        </p>
+      </div>
 
-        <div className="space-y-6">
-          {trackingData.map((item) => (
-            <Card key={item.id} className="shadow-lg hover:shadow-xl transition-all">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="font-mono text-sm px-3 py-1 bg-muted rounded-md">
-                        {item.id}
-                      </span>
-                      <StatusBadge status={item.status} />
-                    </div>
-                    <CardTitle>{item.title}</CardTitle>
+      <div className="bg-card rounded-lg border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>ID</TableHead>
+              <TableHead>Judul</TableHead>
+              <TableHead>Current Stage</TableHead>
+              <TableHead>Last Update</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Progress</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {mockTracking.map((item) => (
+              <TableRow key={item.id}>
+                <TableCell className="font-medium">{item.id}</TableCell>
+                <TableCell>{item.title}</TableCell>
+                <TableCell>{item.currentStage}</TableCell>
+                <TableCell>{item.lastUpdate}</TableCell>
+                <TableCell>
+                  <StatusBadge status={item.status} />
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-3">
+                    <Progress value={item.progress} className="w-24" />
+                    <span className="text-sm font-medium min-w-[3rem]">
+                      {item.progress}%
+                    </span>
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {item.timeline.map((step, index) => (
-                    <div key={index} className="flex gap-4">
-                      <div className="flex flex-col items-center">
-                        {step.completed ? (
-                          <CheckCircle className="w-6 h-6 text-success" />
-                        ) : step.current ? (
-                          <Clock className="w-6 h-6 text-primary animate-pulse" />
-                        ) : (
-                          <Circle className="w-6 h-6 text-muted-foreground" />
-                        )}
-                        {index < item.timeline.length - 1 && (
-                          <div
-                            className={`w-0.5 h-12 ${
-                              step.completed ? "bg-success" : "bg-border"
-                            }`}
-                          />
-                        )}
-                      </div>
-                      <div className="flex-1 pb-8">
-                        <h4
-                          className={`font-semibold mb-1 ${
-                            step.completed
-                              ? "text-foreground"
-                              : step.current
-                              ? "text-primary"
-                              : "text-muted-foreground"
-                          }`}
-                        >
-                          {step.step}
-                        </h4>
-                        <p className="text-sm text-muted-foreground">{step.date}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
     </div>
   );

@@ -1,13 +1,13 @@
-import { LayoutDashboard, FileText, CheckSquare, TrendingUp, Package } from "lucide-react";
+import { LayoutDashboard, FileText, ClipboardCheck, TrendingUp, Package } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
-  { icon: FileText, label: "Pengajuan", path: "/requests" },
-  { icon: CheckSquare, label: "Approval", path: "/approvals" },
+  { icon: FileText, label: "Pengajuan & Approval", path: "/pengajuan" },
+  { icon: ClipboardCheck, label: "Form Evaluasi", path: "/evaluasi" },
   { icon: TrendingUp, label: "Tracking", path: "/tracking" },
-  { icon: Package, label: "Vendor", path: "/vendors" },
+  { icon: Package, label: "Pengadaan", path: "/pengadaan" },
 ];
 
 export const Sidebar = () => {
