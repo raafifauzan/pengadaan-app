@@ -103,7 +103,7 @@ export default function FormEvaluasi() {
                   {new Date(evaluation.approvedDate).toLocaleDateString("id-ID")}
                 </TableCell>
                 <TableCell>
-                  <StatusBadge status={evaluation.status as any} />
+                  <StatusBadge status={evaluation.status} />
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex gap-2 justify-end">
