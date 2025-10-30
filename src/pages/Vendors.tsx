@@ -80,10 +80,6 @@ export default function Vendors() {
 
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center gap-2 text-muted-foreground">
-                      <Mail className="w-4 h-4" />
-                      <span>{vendor.email}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-muted-foreground">
                       <Phone className="w-4 h-4" />
                       <span>{vendor.phone}</span>
                     </div>

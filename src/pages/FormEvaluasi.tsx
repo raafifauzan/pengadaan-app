@@ -219,9 +219,9 @@ export default function FormEvaluasi() {
   );
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 md:p-8 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Form Evaluasi</h1>
+        <h1 className="text-2xl md:text-3xl font-bold">Form Evaluasi</h1>
         <p className="text-muted-foreground mt-1">
           Generate dan kelola form evaluasi vendor
         </p>
@@ -264,61 +264,60 @@ export default function FormEvaluasi() {
 
           {/* Table */}
           <div className="bg-card rounded-lg border overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>No Evaluasi</TableHead>
-                  <TableHead>No Surat</TableHead>
-                  <TableHead>Judul</TableHead>
-                  <TableHead>Bagian/Unit</TableHead>
-                  <TableHead>Requestor</TableHead>
-                  <TableHead>Jenis</TableHead>
-                  <TableHead>Nilai</TableHead>
-                  <TableHead>Tanggal</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paginatedEvaluations.map((evaluation) => (
-                  <TableRow key={evaluation.id}>
-                    <TableCell className="font-medium">{evaluation.noEvaluasi}</TableCell>
-                    <TableCell>{evaluation.noSurat}</TableCell>
-                    <TableCell>{evaluation.title}</TableCell>
-                    <TableCell>{evaluation.department}</TableCell>
-                    <TableCell className="text-sm">{evaluation.requestor}</TableCell>
-                    <TableCell>{evaluation.jenisPengajuan}</TableCell>
-                    <TableCell>{formatCurrency(evaluation.amount)}</TableCell>
-                    <TableCell>
-                      {new Date(evaluation.approvedDate).toLocaleDateString("id-ID")}
-                    </TableCell>
-                    <TableCell>
-                      <StatusBadge status={evaluation.status} />
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex gap-2 justify-end">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleDetail(evaluation)}
-                        >
-                          <FileText className="h-4 w-4 mr-1" />
-                          Detail
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="default"
-                          onClick={() => handlePrint(evaluation.noEvaluasi)}
-                        >
-                          <Printer className="h-4 w-4 mr-1" />
-                          Print
-                        </Button>
-                      </div>
-                    </TableCell>
+            <div className="min-w-[900px]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[150px]">No Evaluasi</TableHead>
+                    <TableHead className="w-[140px]">No Surat</TableHead>
+                    <TableHead className="min-w-[180px]">Judul</TableHead>
+                    <TableHead className="w-[120px]">Bagian/Unit</TableHead>
+                    <TableHead className="w-[100px]">Jenis</TableHead>
+                    <TableHead className="w-[130px]">Nilai</TableHead>
+                    <TableHead className="w-[100px]">Tanggal</TableHead>
+                    <TableHead className="w-[100px]">Status</TableHead>
+                    <TableHead className="w-[140px] text-right">Action</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {paginatedEvaluations.map((evaluation) => (
+                    <TableRow key={evaluation.id}>
+                      <TableCell className="font-medium text-sm">{evaluation.noEvaluasi}</TableCell>
+                      <TableCell className="text-sm">{evaluation.noSurat}</TableCell>
+                      <TableCell className="text-sm">{evaluation.title}</TableCell>
+                      <TableCell className="text-sm">{evaluation.department}</TableCell>
+                      <TableCell className="text-sm">{evaluation.jenisPengajuan}</TableCell>
+                      <TableCell className="text-sm">{formatCurrency(evaluation.amount)}</TableCell>
+                      <TableCell className="text-sm">
+                        {new Date(evaluation.approvedDate).toLocaleDateString("id-ID")}
+                      </TableCell>
+                      <TableCell>
+                        <StatusBadge status={evaluation.status} />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex gap-1 justify-end">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDetail(evaluation)}
+                          >
+                            <FileText className="h-3 w-3 mr-1" />
+                            Detail
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handlePrint(evaluation.noEvaluasi)}
+                          >
+                            <Printer className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
 
           {/* Pagination */}
@@ -356,76 +355,86 @@ export default function FormEvaluasi() {
         {/* Tab 2: Progres Dokumen */}
         <TabsContent value="progres" className="space-y-6">
           <div className="bg-card rounded-lg border overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>No Form Evaluasi</TableHead>
-                  <TableHead>Judul</TableHead>
-                  <TableHead>Bagian/Unit</TableHead>
-                  <TableHead className="text-center">Apv 1</TableHead>
-                  <TableHead className="text-center">Apv 2</TableHead>
-                  <TableHead className="text-center">Apv 3</TableHead>
-                  <TableHead className="text-center">Apv 4</TableHead>
-                  <TableHead className="text-center">Apv 5</TableHead>
-                  <TableHead>Lampiran</TableHead>
-                  <TableHead className="text-right">Status & Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {mockProgres.map((progres) => (
-                  <TableRow key={progres.id}>
-                    <TableCell className="font-medium">{progres.noEvaluasi}</TableCell>
-                    <TableCell>{progres.title}</TableCell>
-                    <TableCell>{progres.department}</TableCell>
-                    <TableCell className="text-center">
-                      <StatusBadge status={progres.approval1} />
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <StatusBadge status={progres.approval2} />
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <StatusBadge status={progres.approval3} />
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <StatusBadge status={progres.approval4} />
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <StatusBadge status={progres.approval5} />
-                    </TableCell>
-                    <TableCell>
-                      {progres.lampiran ? (
-                        <span className="text-sm text-muted-foreground">{progres.lampiran}</span>
-                      ) : (
-                        <Button variant="ghost" size="sm">
-                          <Upload className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex flex-col gap-2 items-end">
-                        <StatusBadge
-                          status={
-                            progres.status === "selesai"
-                              ? "completed"
-                              : progres.status === "revisi"
-                              ? "rejected"
-                              : "in_progress"
-                          }
-                        />
-                        {progres.status === "selesai" && (
+            <div className="min-w-[1000px]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[150px]">No Form Evaluasi</TableHead>
+                    <TableHead className="min-w-[180px]">Judul</TableHead>
+                    <TableHead className="w-[120px]">Bagian/Unit</TableHead>
+                    <TableHead className="w-[80px]">Apv 1</TableHead>
+                    <TableHead className="w-[80px]">Apv 2</TableHead>
+                    <TableHead className="w-[80px]">Apv 3</TableHead>
+                    <TableHead className="w-[80px]">Apv 4</TableHead>
+                    <TableHead className="w-[80px]">Apv 5</TableHead>
+                    <TableHead className="w-[100px]">Lampiran</TableHead>
+                    <TableHead className="w-[160px] text-right">Status & Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {mockProgres.map((progres) => (
+                    <TableRow key={progres.id}>
+                      <TableCell className="font-medium text-sm">{progres.noEvaluasi}</TableCell>
+                      <TableCell className="text-sm">{progres.title}</TableCell>
+                      <TableCell className="text-sm">{progres.department}</TableCell>
+                      <TableCell>
+                        <StatusBadge status={progres.approval1} />
+                      </TableCell>
+                      <TableCell>
+                        <StatusBadge status={progres.approval2} />
+                      </TableCell>
+                      <TableCell>
+                        <StatusBadge status={progres.approval3} />
+                      </TableCell>
+                      <TableCell>
+                        <StatusBadge status={progres.approval4} />
+                      </TableCell>
+                      <TableCell>
+                        <StatusBadge status={progres.approval5} />
+                      </TableCell>
+                      <TableCell>
+                        {progres.lampiran ? (
+                          <Button variant="ghost" size="sm">
+                            <FileText className="h-4 w-4" />
+                          </Button>
+                        ) : (
                           <Button
+                            variant="outline"
                             size="sm"
-                            onClick={() => handleSendToPengadaan(progres.noEvaluasi)}
+                            onClick={() => toast({ title: "Upload", description: "Upload lampiran" })}
                           >
-                            Kirim ke Pengadaan
+                            <Upload className="h-3 w-3 mr-1" />
+                            Upload
                           </Button>
                         )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex flex-col gap-1 items-end">
+                          <StatusBadge
+                            status={
+                              progres.status === "selesai"
+                                ? "completed"
+                                : progres.status === "revisi"
+                                ? "rejected"
+                                : "in_progress"
+                            }
+                          />
+                          {progres.status === "selesai" && (
+                            <Button
+                              size="sm"
+                              onClick={() => handleSendToPengadaan(progres.noEvaluasi)}
+                              className="mt-1"
+                            >
+                              Kirim ke Pengadaan
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         </TabsContent>
       </Tabs>

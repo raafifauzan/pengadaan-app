@@ -55,48 +55,50 @@ const mockTracking: TrackingItem[] = [
 
 export default function Tracking() {
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 md:p-8 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Tracking Pengajuan</h1>
+        <h1 className="text-2xl md:text-3xl font-bold">Tracking Pengajuan</h1>
         <p className="text-muted-foreground mt-1">
           Monitor status dan progress pengajuan procurement
         </p>
       </div>
 
-      <div className="bg-card rounded-lg border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>ID</TableHead>
-              <TableHead>Judul</TableHead>
-              <TableHead>Current Stage</TableHead>
-              <TableHead>Last Update</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Progress</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {mockTracking.map((item) => (
-              <TableRow key={item.id}>
-                <TableCell className="font-medium">{item.id}</TableCell>
-                <TableCell>{item.title}</TableCell>
-                <TableCell>{item.currentStage}</TableCell>
-                <TableCell>{item.lastUpdate}</TableCell>
-                <TableCell>
-                  <StatusBadge status={item.status} />
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    <Progress value={item.progress} className="w-24" />
-                    <span className="text-sm font-medium min-w-[3rem]">
-                      {item.progress}%
-                    </span>
-                  </div>
-                </TableCell>
+      <div className="bg-card rounded-lg border overflow-x-auto">
+        <div className="min-w-[700px]">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[100px]">ID</TableHead>
+                <TableHead className="min-w-[180px]">Judul</TableHead>
+                <TableHead className="w-[140px]">Current Stage</TableHead>
+                <TableHead className="w-[140px]">Last Update</TableHead>
+                <TableHead className="w-[100px]">Status</TableHead>
+                <TableHead className="w-[140px]">Progress</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {mockTracking.map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell className="font-medium text-sm">{item.id}</TableCell>
+                  <TableCell className="text-sm">{item.title}</TableCell>
+                  <TableCell className="text-sm">{item.currentStage}</TableCell>
+                  <TableCell className="text-sm">{item.lastUpdate}</TableCell>
+                  <TableCell>
+                    <StatusBadge status={item.status} />
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <Progress value={item.progress} className="w-24" />
+                      <span className="text-sm font-medium min-w-[3rem]">
+                        {item.progress}%
+                      </span>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </div>
   );

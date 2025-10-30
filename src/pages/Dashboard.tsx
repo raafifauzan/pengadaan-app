@@ -68,9 +68,9 @@ const divisionData = [
 export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
-      <div className="container mx-auto p-6 space-y-6">
+      <div className="container mx-auto p-4 md:p-6 space-y-6">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Dashboard Overview</h1>
+          <h1 className="text-2xl md:text-3xl font-bold mb-2">Dashboard Overview</h1>
           <p className="text-muted-foreground">Monitor sistem procurement Anda</p>
         </div>
 
@@ -143,27 +143,29 @@ export default function Dashboard() {
             <CardHeader>
               <CardTitle>Ringkasan Pengadaan per Divisi</CardTitle>
             </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Divisi</TableHead>
-                    <TableHead className="text-center">Jumlah</TableHead>
-                    <TableHead className="text-center">Selesai</TableHead>
-                    <TableHead className="text-right">% Selesai</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {divisionData.map((div) => (
-                    <TableRow key={div.divisi}>
-                      <TableCell className="font-medium">{div.divisi}</TableCell>
-                      <TableCell className="text-center">{div.total}</TableCell>
-                      <TableCell className="text-center">{div.selesai}</TableCell>
-                      <TableCell className="text-right">{div.persentase}%</TableCell>
+            <CardContent className="overflow-x-auto">
+              <div className="min-w-[400px]">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="min-w-[120px]">Divisi</TableHead>
+                      <TableHead className="w-[140px]">Jumlah Pengajuan</TableHead>
+                      <TableHead className="w-[100px]">Selesai</TableHead>
+                      <TableHead className="w-[100px]">% Selesai</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {divisionData.map((div) => (
+                      <TableRow key={div.divisi}>
+                        <TableCell className="font-medium text-sm">{div.divisi}</TableCell>
+                        <TableCell className="text-sm">{div.total}</TableCell>
+                        <TableCell className="text-sm">{div.selesai}</TableCell>
+                        <TableCell className="text-sm">{div.persentase}%</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         </div>

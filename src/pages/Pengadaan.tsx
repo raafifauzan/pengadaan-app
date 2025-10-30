@@ -86,10 +86,10 @@ export default function Pengadaan() {
   };
 
   return (
-    <div className="p-8 space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="p-4 md:p-8 space-y-6">
+      <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Pengadaan</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">Pengadaan</h1>
           <p className="text-muted-foreground mt-1">
             Pengaturan dan approval pengadaan
           </p>
@@ -107,97 +107,101 @@ export default function Pengadaan() {
         </TabsList>
 
         <TabsContent value="approval" className="space-y-4">
-          <div className="bg-card rounded-lg border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Judul</TableHead>
-                  <TableHead>Vendor</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Est. Delivery</TableHead>
-                  <TableHead className="text-right">Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {mockPengadaan
-                  .filter((item) => item.status === "waiting_po")
-                  .map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell className="font-medium">{item.id}</TableCell>
-                      <TableCell>{item.title}</TableCell>
-                      <TableCell>{item.vendor}</TableCell>
-                      <TableCell>{formatCurrency(item.amount)}</TableCell>
-                      <TableCell>
-                        <StatusBadge status={item.status as any} />
-                      </TableCell>
-                      <TableCell>
-                        {item.estimatedDelivery &&
-                          new Date(item.estimatedDelivery).toLocaleDateString("id-ID")}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex gap-2 justify-end">
-                          <Button
-                            size="sm"
-                            variant="default"
-                            onClick={() => handleApprove(item.id)}
-                          >
-                            <Check className="h-4 w-4 mr-1" />
-                            Approve PO
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => handleReject(item.id)}
-                          >
-                            <X className="h-4 w-4 mr-1" />
-                            Reject
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-              </TableBody>
-            </Table>
+          <div className="bg-card rounded-lg border overflow-x-auto">
+            <div className="min-w-[800px]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[100px]">ID</TableHead>
+                    <TableHead className="min-w-[180px]">Judul</TableHead>
+                    <TableHead className="w-[150px]">Vendor</TableHead>
+                    <TableHead className="w-[130px]">Amount</TableHead>
+                    <TableHead className="w-[100px]">Status</TableHead>
+                    <TableHead className="w-[120px]">Est. Delivery</TableHead>
+                    <TableHead className="w-[180px] text-right">Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {mockPengadaan
+                    .filter((item) => item.status === "waiting_po")
+                    .map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell className="font-medium text-sm">{item.id}</TableCell>
+                        <TableCell className="text-sm">{item.title}</TableCell>
+                        <TableCell className="text-sm">{item.vendor}</TableCell>
+                        <TableCell className="text-sm">{formatCurrency(item.amount)}</TableCell>
+                        <TableCell>
+                          <StatusBadge status={item.status as any} />
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {item.estimatedDelivery &&
+                            new Date(item.estimatedDelivery).toLocaleDateString("id-ID")}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex gap-2 justify-end">
+                            <Button
+                              size="sm"
+                              variant="default"
+                              onClick={() => handleApprove(item.id)}
+                            >
+                              <Check className="h-4 w-4 mr-1" />
+                              Approve PO
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => handleReject(item.id)}
+                            >
+                              <X className="h-4 w-4 mr-1" />
+                              Reject
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         </TabsContent>
 
         <TabsContent value="monitoring" className="space-y-4">
-          <div className="bg-card rounded-lg border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Judul</TableHead>
-                  <TableHead>Vendor</TableHead>
-                  <TableHead>PO Number</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Est. Delivery</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {mockPengadaan
-                  .filter((item) => item.status !== "waiting_po")
-                  .map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell className="font-medium">{item.id}</TableCell>
-                      <TableCell>{item.title}</TableCell>
-                      <TableCell>{item.vendor}</TableCell>
-                      <TableCell>{item.poNumber || "-"}</TableCell>
-                      <TableCell>{formatCurrency(item.amount)}</TableCell>
-                      <TableCell>
-                        <StatusBadge status={item.status as any} />
-                      </TableCell>
-                      <TableCell>
-                        {item.estimatedDelivery &&
-                          new Date(item.estimatedDelivery).toLocaleDateString("id-ID")}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-              </TableBody>
-            </Table>
+          <div className="bg-card rounded-lg border overflow-x-auto">
+            <div className="min-w-[800px]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[100px]">ID</TableHead>
+                    <TableHead className="min-w-[180px]">Judul</TableHead>
+                    <TableHead className="w-[150px]">Vendor</TableHead>
+                    <TableHead className="w-[120px]">PO Number</TableHead>
+                    <TableHead className="w-[130px]">Amount</TableHead>
+                    <TableHead className="w-[100px]">Status</TableHead>
+                    <TableHead className="w-[120px]">Est. Delivery</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {mockPengadaan
+                    .filter((item) => item.status !== "waiting_po")
+                    .map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell className="font-medium text-sm">{item.id}</TableCell>
+                        <TableCell className="text-sm">{item.title}</TableCell>
+                        <TableCell className="text-sm">{item.vendor}</TableCell>
+                        <TableCell className="text-sm">{item.poNumber || "-"}</TableCell>
+                        <TableCell className="text-sm">{formatCurrency(item.amount)}</TableCell>
+                        <TableCell>
+                          <StatusBadge status={item.status as any} />
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {item.estimatedDelivery &&
+                            new Date(item.estimatedDelivery).toLocaleDateString("id-ID")}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         </TabsContent>
       </Tabs>

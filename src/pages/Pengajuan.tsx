@@ -193,10 +193,10 @@ export default function Pengajuan() {
   );
 
   return (
-    <div className="p-8 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="p-4 md:p-8 space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Pengajuan & Approval</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">Pengajuan & Approval</h1>
           <p className="text-muted-foreground mt-1">
             Kelola dan setujui pengajuan pengadaan
           </p>
@@ -240,71 +240,71 @@ export default function Pengajuan() {
 
       {/* Table */}
       <div className="bg-card rounded-lg border overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>No Surat</TableHead>
-              <TableHead>Judul</TableHead>
-              <TableHead>Bagian/Unit</TableHead>
-              <TableHead>Requestor</TableHead>
-              <TableHead>Jenis</TableHead>
-              <TableHead>Nilai</TableHead>
-              <TableHead>Tanggal</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Lampiran</TableHead>
-              <TableHead className="text-right">Action</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {paginatedRequests.map((request) => (
-              <TableRow key={request.id}>
-                <TableCell className="font-medium">{request.noSurat}</TableCell>
-                <TableCell>{request.title}</TableCell>
-                <TableCell>{request.department}</TableCell>
-                <TableCell className="text-sm">{request.requestor}</TableCell>
-                <TableCell>{request.jenisPengajuan}</TableCell>
-                <TableCell>{formatCurrency(request.amount)}</TableCell>
-                <TableCell>
-                  {new Date(request.date).toLocaleDateString("id-ID")}
-                </TableCell>
-                <TableCell>
-                  <StatusBadge status={request.status} />
-                </TableCell>
-                <TableCell>
-                  {request.lampiran && (
-                    <Button variant="ghost" size="sm">
-                      <FileText className="h-4 w-4" />
-                    </Button>
-                  )}
-                </TableCell>
-                <TableCell className="text-right">
-                  {request.status === "pending" && (
-                    <div className="flex gap-1 justify-end">
-                      <Button
-                        size="sm"
-                        variant="default"
-                        onClick={() => handleApprove(request.id)}
-                        className="h-8 px-2"
-                      >
-                        <Check className="h-3 w-3 mr-1" />
-                        Approve
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => handleReject(request.id)}
-                        className="h-8 px-2"
-                      >
-                        <X className="h-3 w-3 mr-1" />
-                        Reject
-                      </Button>
-                    </div>
-                  )}
-                </TableCell>
+        <div className="min-w-[800px]">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[140px]">No Surat</TableHead>
+                <TableHead className="min-w-[180px]">Judul</TableHead>
+                <TableHead className="w-[120px]">Bagian/Unit</TableHead>
+                <TableHead className="w-[100px]">Jenis</TableHead>
+                <TableHead className="w-[130px]">Nilai</TableHead>
+                <TableHead className="w-[100px]">Tanggal</TableHead>
+                <TableHead className="w-[100px]">Status</TableHead>
+                <TableHead className="w-[80px]">Lampiran</TableHead>
+                <TableHead className="w-[140px] text-right">Action</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {paginatedRequests.map((request) => (
+                <TableRow key={request.id}>
+                  <TableCell className="font-medium text-sm">{request.noSurat}</TableCell>
+                  <TableCell className="text-sm">{request.title}</TableCell>
+                  <TableCell className="text-sm">{request.department}</TableCell>
+                  <TableCell className="text-sm">{request.jenisPengajuan}</TableCell>
+                  <TableCell className="text-sm">{formatCurrency(request.amount)}</TableCell>
+                  <TableCell className="text-sm">
+                    {new Date(request.date).toLocaleDateString("id-ID")}
+                  </TableCell>
+                  <TableCell>
+                    <StatusBadge status={request.status} />
+                  </TableCell>
+                  <TableCell>
+                    {request.lampiran && (
+                      <Button variant="ghost" size="sm">
+                        <FileText className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {request.status === "pending" && (
+                      <div className="flex gap-1 justify-end">
+                        <Button
+                          size="sm"
+                          variant="default"
+                          onClick={() => handleApprove(request.id)}
+                          className="h-8 px-2"
+                        >
+                          <Check className="h-3 w-3 mr-1" />
+                          Approve
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleReject(request.id)}
+                          className="h-8 px-2"
+                        >
+                          <X className="h-3 w-3 mr-1" />
+                          Reject
+                        </Button>
+                      </div>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </div>
 
       {/* Pagination */}

@@ -98,14 +98,10 @@ export default function Requests() {
                       <h3 className="text-xl font-bold mb-1">{request.title}</h3>
                       <p className="text-muted-foreground">{request.description}</p>
                     </div>
-                    <div className="flex gap-6 text-sm">
+                    <div className="flex flex-wrap gap-4 text-sm">
                       <div>
                         <span className="text-muted-foreground">Department: </span>
                         <span className="font-medium">{request.department}</span>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Pengaju: </span>
-                        <span className="font-medium">{request.requestor}</span>
                       </div>
                       <div>
                         <span className="text-muted-foreground">Tanggal: </span>
