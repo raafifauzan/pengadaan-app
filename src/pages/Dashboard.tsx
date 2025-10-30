@@ -2,6 +2,24 @@ import { FileText, CheckCircle, Clock, TrendingUp } from "lucide-react";
 import { StatCard } from "@/components/StatCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge, ProcurementStatus } from "@/components/StatusBadge";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 const mockRequests = [
   {
@@ -28,6 +46,23 @@ const mockRequests = [
     status: "in_progress" as ProcurementStatus,
     date: "2024-03-13",
   },
+];
+
+const trendData = [
+  { month: "Jan", total: 45, selesai: 38 },
+  { month: "Feb", total: 52, selesai: 45 },
+  { month: "Mar", total: 48, selesai: 42 },
+  { month: "Apr", total: 61, selesai: 55 },
+  { month: "May", total: 55, selesai: 48 },
+  { month: "Jun", total: 67, selesai: 60 },
+];
+
+const divisionData = [
+  { divisi: "IT", total: 45, selesai: 40, persentase: 88.9 },
+  { divisi: "GA", total: 32, selesai: 28, persentase: 87.5 },
+  { divisi: "Marketing", total: 28, selesai: 25, persentase: 89.3 },
+  { divisi: "Finance", total: 21, selesai: 19, persentase: 90.5 },
+  { divisi: "HR", total: 18, selesai: 15, persentase: 83.3 },
 ];
 
 export default function Dashboard() {
@@ -69,6 +104,78 @@ export default function Dashboard() {
             variant="default"
           />
         </div>
+
+        <div className="grid gap-6 lg:grid-cols-2">
+          {/* Line Chart - Tren Pengajuan */}
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle>Tren Pengajuan Pengadaan</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={trendData}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="month" className="text-xs" />
+                  <YAxis className="text-xs" />
+                  <Tooltip />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="total"
+                    stroke="hsl(var(--primary))"
+                    strokeWidth={2}
+                    name="Total Pengajuan"
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="selesai"
+                    stroke="hsl(var(--success))"
+                    strokeWidth={2}
+                    name="Selesai"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* Tabel Ringkasan per Divisi */}
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle>Ringkasan Pengadaan per Divisi</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Divisi</TableHead>
+                    <TableHead className="text-center">Jumlah</TableHead>
+                    <TableHead className="text-center">Selesai</TableHead>
+                    <TableHead className="text-right">% Selesai</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {divisionData.map((div) => (
+                    <TableRow key={div.divisi}>
+                      <TableCell className="font-medium">{div.divisi}</TableCell>
+                      <TableCell className="text-center">{div.total}</TableCell>
+                      <TableCell className="text-center">{div.selesai}</TableCell>
+                      <TableCell className="text-right">{div.persentase}%</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Reserved Section for Future Mapping */}
+        <Card className="shadow-lg border-dashed">
+          <CardContent className="flex items-center justify-center h-48">
+            <p className="text-muted-foreground text-sm">
+              Reserved: Peta Mapping Pengadaan (Coming Soon)
+            </p>
+          </CardContent>
+        </Card>
 
         <Card className="shadow-lg">
           <CardHeader>
