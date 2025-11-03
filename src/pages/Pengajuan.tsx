@@ -252,14 +252,14 @@ export default function Pengajuan() {
 
   if (isLoading) {
     return (
-      <div className="p-4 md:p-6 flex items-center justify-center">
+      <div className="p-4 md:p-8 flex items-center justify-center">
         <p>Memuat data...</p>
       </div>
     );
   }
 
   return (
-    <div className="p-4 md:p-6 space-y-4">
+    <div className="p-4 md:p-8 space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold">Pengajuan & Approval</h1>

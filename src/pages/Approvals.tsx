@@ -36,7 +36,7 @@ export default function Approvals() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
-      <div className="container mx-auto p-4 md:p-6 space-y-4">
+      <div className="container mx-auto p-6 space-y-6">
         <div>
           <h1 className="text-3xl font-bold mb-2">Approval Pengajuan</h1>
           <p className="text-muted-foreground">Review dan approve pengajuan procurement</p>

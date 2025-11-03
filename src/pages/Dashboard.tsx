@@ -2,7 +2,6 @@ import { FileText, CheckCircle, Clock, TrendingUp } from "lucide-react";
 import { StatCard } from "@/components/StatCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge, ProcurementStatus } from "@/components/StatusBadge";
-import mappingImage from "@/assets/mapping-pengadaan.png";
 import {
   LineChart,
   Line,
@@ -69,7 +68,7 @@ const divisionData = [
 export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
-      <div className="container mx-auto p-4 md:p-6 space-y-4">
+      <div className="container mx-auto p-4 md:p-6 space-y-6">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold mb-2">Dashboard Overview</h1>
           <p className="text-muted-foreground">Monitor sistem procurement Anda</p>
@@ -171,19 +170,12 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Peta Mapping Pengadaan */}
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle>Peta Mapping Pengadaan</CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-center">
-              <img 
-                src={mappingImage} 
-                alt="Mapping Tahapan Pengadaan" 
-                className="w-full max-w-5xl h-auto object-contain"
-              />
-            </div>
+        {/* Reserved Section for Future Mapping */}
+        <Card className="shadow-lg border-dashed">
+          <CardContent className="flex items-center justify-center h-48">
+            <p className="text-muted-foreground text-sm">
+              Reserved: Peta Mapping Pengadaan (Coming Soon)
+            </p>
           </CardContent>
         </Card>
 

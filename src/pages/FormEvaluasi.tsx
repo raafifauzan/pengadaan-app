@@ -371,14 +371,14 @@ export default function FormEvaluasi() {
 
   if (isLoading) {
     return (
-      <div className="p-4 md:p-6 flex items-center justify-center">
+      <div className="p-4 md:p-8 flex items-center justify-center">
         <p>Memuat data...</p>
       </div>
     );
   }
 
   return (
-    <div className="p-4 md:p-6 space-y-4">
+    <div className="p-4 md:p-8 space-y-6">
       <div>
         <h1 className="text-2xl md:text-3xl font-bold">Form Evaluasi</h1>
         <p className="text-muted-foreground mt-1">
