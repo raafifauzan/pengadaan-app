@@ -4,8 +4,9 @@ import { cn } from "@/lib/utils";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
-  { icon: FileText, label: "Pengajuan", path: "/pengajuan" },
+  { icon: FileText, label: "Pengajuan & Approval", path: "/pengajuan" },
   { icon: ClipboardCheck, label: "Form Evaluasi", path: "/evaluasi" },
+  { icon: TrendingUp, label: "Tracking", path: "/tracking" },
   { icon: Package, label: "Pengadaan", path: "/pengadaan" },
 ];
 

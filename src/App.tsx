@@ -26,6 +26,7 @@ const App = () => (
               <Route path="/" element={<Dashboard />} />
               <Route path="/pengajuan" element={<Pengajuan />} />
               <Route path="/evaluasi" element={<FormEvaluasi />} />
+              <Route path="/tracking" element={<Tracking />} />
               <Route path="/pengadaan" element={<Pengadaan />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
