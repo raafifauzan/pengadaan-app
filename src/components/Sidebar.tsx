@@ -21,11 +21,8 @@ const menuItems: MenuItem[] = [
   },
   {
     icon: FileText,
-    label: "Approval",
-    path: "/approval",
-    subItems: [
-      { label: "Pengajuan", path: "/pengajuan" },
-    ],
+    label: "Pengajuan & Approval",
+    path: "/pengajuan",
   },
   {
     icon: ClipboardCheck,

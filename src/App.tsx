@@ -9,7 +9,6 @@ import Pengajuan from "./pages/Pengajuan";
 import FormEvaluasi from "./pages/FormEvaluasi";
 import Tracking from "./pages/Tracking";
 import Pengadaan from "./pages/Pengadaan";
-import Approvals from "./pages/Approvals";
 import ProgresDokumen from "./pages/ProgresDokumen";
 import KonfirmasiPembayaran from "./pages/KonfirmasiPembayaran";
 import NotFound from "./pages/NotFound";
@@ -28,7 +27,6 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/tracking" element={<Tracking />} />
-              <Route path="/approval" element={<Approvals />} />
               <Route path="/pengajuan" element={<Pengajuan />} />
               <Route path="/evaluasi" element={<FormEvaluasi />} />
               <Route path="/evaluasi/progres" element={<ProgresDokumen />} />
