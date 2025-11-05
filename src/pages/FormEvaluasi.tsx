@@ -427,58 +427,61 @@ export default function FormEvaluasi() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[150px]">
-                      <Button variant="ghost" size="sm" onClick={() => handleSort("kode_form")} className="h-8 px-2">
-                        No Evaluasi <ArrowUpDown className="ml-1 h-3 w-3" />
-                      </Button>
+                    <TableHead className="w-[150px] text-left">
+                      <button onClick={() => handleSort("kode_form")} className="flex items-center gap-1 hover:text-foreground">
+                        No Evaluasi <ArrowUpDown className="h-3 w-3" />
+                      </button>
                     </TableHead>
-                    <TableHead className="w-[140px]">No Surat</TableHead>
-                    <TableHead className="min-w-[540px]">
-                      <Button variant="ghost" size="sm" onClick={() => handleSort("judul")} className="h-8 px-2">
-                        Judul <ArrowUpDown className="ml-1 h-3 w-3" />
-                      </Button>
+                    <TableHead className="w-[140px] text-left">No Surat</TableHead>
+                    <TableHead className="min-w-[200px] max-w-[400px] text-left">
+                      <button onClick={() => handleSort("judul")} className="flex items-center gap-1 hover:text-foreground">
+                        Judul <ArrowUpDown className="h-3 w-3" />
+                      </button>
                     </TableHead>
-                    <TableHead className="w-[120px]">
-                      <Button variant="ghost" size="sm" onClick={() => handleSort("unit")} className="h-8 px-2">
-                        Bagian/Unit <ArrowUpDown className="ml-1 h-3 w-3" />
-                      </Button>
+                    <TableHead className="w-[120px] text-center">
+                      <button onClick={() => handleSort("unit")} className="flex items-center gap-1 mx-auto hover:text-foreground">
+                        Bagian/Unit <ArrowUpDown className="h-3 w-3" />
+                      </button>
                     </TableHead>
-                    <TableHead className="w-[100px]">Jenis</TableHead>
-                    <TableHead className="w-[130px]">
-                      <Button variant="ghost" size="sm" onClick={() => handleSort("nilai_pengajuan")} className="h-8 px-2">
-                        Nilai <ArrowUpDown className="ml-1 h-3 w-3" />
-                      </Button>
+                    <TableHead className="w-[100px] text-left">Jenis</TableHead>
+                    <TableHead className="w-[150px] text-right">
+                      <button onClick={() => handleSort("nilai_pengajuan")} className="flex items-center gap-1 ml-auto hover:text-foreground">
+                        Nilai <ArrowUpDown className="h-3 w-3" />
+                      </button>
                     </TableHead>
-                    <TableHead className="w-[100px]">
-                      <Button variant="ghost" size="sm" onClick={() => handleSort("created_at")} className="h-8 px-2">
-                        Tanggal <ArrowUpDown className="ml-1 h-3 w-3" />
-                      </Button>
+                    <TableHead className="w-[110px] text-left">
+                      <button onClick={() => handleSort("created_at")} className="flex items-center gap-1 hover:text-foreground">
+                        Tanggal <ArrowUpDown className="h-3 w-3" />
+                      </button>
                     </TableHead>
-                    <TableHead className="w-[100px]">Status</TableHead>
-                    <TableHead className="w-[140px] text-right">Action</TableHead>
+                    <TableHead className="w-[100px] text-center">Status</TableHead>
+                    <TableHead className="w-[160px] text-center">Action</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {paginatedEvaluations.map((evaluation) => (
                     <TableRow key={evaluation.id}>
-                      <TableCell className="font-medium text-sm">{evaluation.kode_form || "-"}</TableCell>
-                      <TableCell className="text-sm">{evaluation.pengajuan?.no_surat || "-"}</TableCell>
-                      <TableCell className="text-sm">{evaluation.pengajuan?.judul || "-"}</TableCell>
-                      <TableCell className="text-sm">{evaluation.pengajuan?.unit || "-"}</TableCell>
-                      <TableCell className="text-sm">{evaluation.pengajuan?.jenis || "-"}</TableCell>
-                      <TableCell className="text-sm">{formatCurrency(evaluation.pengajuan?.nilai_pengajuan || 0)}</TableCell>
-                      <TableCell className="text-sm">
+                      <TableCell className="font-medium text-sm text-left">{evaluation.kode_form || "-"}</TableCell>
+                      <TableCell className="text-sm text-left">{evaluation.pengajuan?.no_surat || "-"}</TableCell>
+                      <TableCell className="text-sm text-left max-w-[400px] truncate" title={evaluation.pengajuan?.judul}>
+                        {evaluation.pengajuan?.judul || "-"}
+                      </TableCell>
+                      <TableCell className="text-sm text-center">{evaluation.pengajuan?.unit || "-"}</TableCell>
+                      <TableCell className="text-sm text-left">{evaluation.pengajuan?.jenis || "-"}</TableCell>
+                      <TableCell className="text-sm text-right font-medium">{formatCurrency(evaluation.pengajuan?.nilai_pengajuan || 0)}</TableCell>
+                      <TableCell className="text-sm text-left">
                         {evaluation.created_at ? new Date(evaluation.created_at).toLocaleDateString("id-ID") : "-"}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-center">
                         <StatusBadge status={evaluation.is_final ? "evaluated" : "pending_evaluation"} />
                       </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex gap-1 justify-end">
+                      <TableCell className="text-center">
+                        <div className="flex gap-1 justify-center">
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => handleDetail(evaluation)}
+                            className="h-8 px-3"
                           >
                             <FileText className="h-3 w-3 mr-1" />
                             Detail
@@ -487,6 +490,7 @@ export default function FormEvaluasi() {
                             size="sm"
                             variant="ghost"
                             onClick={() => handlePrint(evaluation)}
+                            className="h-8 px-2"
                           >
                             <Printer className="h-3 w-3" />
                           </Button>

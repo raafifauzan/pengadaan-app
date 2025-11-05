@@ -39,6 +39,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { StatusBadge } from "@/components/StatusBadge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 type ProcurementStatus = "pending" | "approved" | "rejected" | "in_progress" | "completed";
 
@@ -131,6 +132,10 @@ export default function Pengajuan() {
     type: "approve" | "reject";
     id: string;
   }>({ open: false, type: "approve", id: "" });
+  const [detailDialog, setDetailDialog] = useState<{
+    open: boolean;
+    data: any;
+  }>({ open: false, data: null });
   const [rejectReason, setRejectReason] = useState("");
   const [sortConfig, setSortConfig] = useState<{
     key: string;
@@ -315,13 +320,13 @@ export default function Pengajuan() {
                     No Surat <ArrowUpDown className="h-3 w-3" />
                   </button>
                 </TableHead>
-                <TableHead className="min-w-[200px] text-left">
+                <TableHead className="min-w-[200px] max-w-[400px] text-left">
                   <button onClick={() => handleSort("judul")} className="flex items-center gap-1 hover:text-foreground">
                     Judul <ArrowUpDown className="h-3 w-3" />
                   </button>
                 </TableHead>
-                <TableHead className="w-[120px] text-left">
-                  <button onClick={() => handleSort("unit")} className="flex items-center gap-1 hover:text-foreground">
+                <TableHead className="w-[120px] text-center">
+                  <button onClick={() => handleSort("unit")} className="flex items-center gap-1 mx-auto hover:text-foreground">
                     Bagian/Unit <ArrowUpDown className="h-3 w-3" />
                   </button>
                 </TableHead>
@@ -347,10 +352,16 @@ export default function Pengajuan() {
             </TableHeader>
             <TableBody>
               {paginatedRequests.map((request) => (
-                <TableRow key={request.id}>
+                <TableRow 
+                  key={request.id}
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => setDetailDialog({ open: true, data: request })}
+                >
                   <TableCell className="font-medium text-sm text-left">{request.no_surat || "-"}</TableCell>
-                  <TableCell className="text-sm text-left">{request.judul || "-"}</TableCell>
-                  <TableCell className="text-sm text-left">{request.unit || "-"}</TableCell>
+                  <TableCell className="text-sm text-left max-w-[400px] truncate" title={request.judul}>
+                    {request.judul || "-"}
+                  </TableCell>
+                  <TableCell className="text-sm text-center">{request.unit || "-"}</TableCell>
                   <TableCell className="text-sm text-left">{request.jenis || "-"}</TableCell>
                   <TableCell className="text-sm text-right font-medium">{formatCurrency(request.nilai_pengajuan)}</TableCell>
                   <TableCell className="text-sm text-left">
@@ -361,14 +372,19 @@ export default function Pengajuan() {
                   </TableCell>
                   <TableCell className="text-center">
                     {request.lampiran_url && (
-                      <Button variant="ghost" size="sm" asChild>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        asChild
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <a href={request.lampiran_url} target="_blank" rel="noopener noreferrer">
                           <FileText className="h-4 w-4" />
                         </a>
                       </Button>
                     )}
                   </TableCell>
-                  <TableCell className="text-center">
+                  <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
                     {request.status === "pending" && (
                       <div className="flex gap-1 justify-center">
                         <Button
@@ -431,6 +447,78 @@ export default function Pengajuan() {
           </PaginationContent>
         </Pagination>
       )}
+
+      {/* Detail Dialog */}
+      <Dialog open={detailDialog.open} onOpenChange={(open) => setDetailDialog({ ...detailDialog, open })}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Detail Pengajuan</DialogTitle>
+          </DialogHeader>
+          {detailDialog.data && (
+            <Card>
+              <CardContent className="pt-6 space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-muted-foreground">No Surat</Label>
+                    <p className="font-medium">{detailDialog.data.no_surat || "-"}</p>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground">Status</Label>
+                    <div className="mt-1">
+                      <StatusBadge status={detailDialog.data.status || "pending"} />
+                    </div>
+                  </div>
+                  <div className="col-span-2">
+                    <Label className="text-muted-foreground">Judul</Label>
+                    <p className="font-medium">{detailDialog.data.judul || "-"}</p>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground">Bagian/Unit</Label>
+                    <p className="font-medium">{detailDialog.data.unit || "-"}</p>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground">Jenis</Label>
+                    <p className="font-medium">{detailDialog.data.jenis || "-"}</p>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground">Nilai Pengajuan</Label>
+                    <p className="font-medium text-lg text-primary">{formatCurrency(detailDialog.data.nilai_pengajuan)}</p>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground">Tanggal Surat</Label>
+                    <p className="font-medium">
+                      {detailDialog.data.tgl_surat ? new Date(detailDialog.data.tgl_surat).toLocaleDateString("id-ID") : "-"}
+                    </p>
+                  </div>
+                  {detailDialog.data.email && (
+                    <div className="col-span-2">
+                      <Label className="text-muted-foreground">Email Pengaju</Label>
+                      <p className="font-medium">{detailDialog.data.email}</p>
+                    </div>
+                  )}
+                  {detailDialog.data.catatan && (
+                    <div className="col-span-2">
+                      <Label className="text-muted-foreground">Catatan</Label>
+                      <p className="font-medium">{detailDialog.data.catatan}</p>
+                    </div>
+                  )}
+                  {detailDialog.data.lampiran_url && (
+                    <div className="col-span-2">
+                      <Label className="text-muted-foreground">Lampiran</Label>
+                      <Button variant="outline" size="sm" asChild className="mt-2">
+                        <a href={detailDialog.data.lampiran_url} target="_blank" rel="noopener noreferrer">
+                          <FileText className="h-4 w-4 mr-2" />
+                          Lihat Dokumen
+                        </a>
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Confirmation Dialogs */}
       <Dialog open={confirmDialog.open} onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}>
