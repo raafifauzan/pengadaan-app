@@ -14,33 +14,31 @@ const menuItems: MenuItem[] = [
   {
     icon: LayoutDashboard,
     label: "Dashboard",
+    path: "/",
     subItems: [
-      { label: "Dashboard", path: "/" },
       { label: "Tracking Transaksi", path: "/tracking" },
     ],
   },
   {
     icon: FileText,
     label: "Approval",
+    path: "/approval",
     subItems: [
-      { label: "Approval", path: "/approval" },
       { label: "Pengajuan", path: "/pengajuan" },
     ],
   },
   {
     icon: ClipboardCheck,
     label: "Form Evaluasi",
+    path: "/evaluasi",
     subItems: [
-      { label: "Kelengkapan Evaluasi", path: "/evaluasi" },
       { label: "Progres Dokumen", path: "/evaluasi/progres" },
     ],
   },
   {
     icon: Package,
     label: "Pengadaan",
-    subItems: [
-      { label: "Kelengkapan Pengadaan", path: "/pengadaan" },
-    ],
+    path: "/pengadaan",
   },
   {
     icon: User,
@@ -102,11 +100,16 @@ export const Sidebar = () => {
 
           return (
             <div key={item.label}>
-              <button
+              <Link
+                to={item.path!}
                 onClick={() => toggleGroup(item.label)}
                 className={cn(
                   "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200",
-                  isActive ? "bg-muted" : "hover:bg-muted"
+                  isPathActive(item.path!) 
+                    ? "bg-primary text-primary-foreground shadow-md"
+                    : isActive 
+                    ? "bg-muted" 
+                    : "hover:bg-muted"
                 )}
               >
                 <Icon className="w-5 h-5" />
@@ -116,8 +119,13 @@ export const Sidebar = () => {
                     "w-4 h-4 transition-transform duration-200",
                     isOpen ? "rotate-180" : ""
                   )}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleGroup(item.label);
+                  }}
                 />
-              </button>
+              </Link>
 
               {isOpen && (
                 <div className="ml-8 mt-1 space-y-1">
