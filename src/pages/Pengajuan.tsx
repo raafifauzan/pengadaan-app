@@ -310,56 +310,56 @@ export default function Pengajuan() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[140px]">
-                  <Button variant="ghost" size="sm" onClick={() => handleSort("no_surat")} className="h-8 px-2">
-                    No Surat <ArrowUpDown className="ml-1 h-3 w-3" />
-                  </Button>
+                <TableHead className="w-[140px] text-left">
+                  <button onClick={() => handleSort("no_surat")} className="flex items-center gap-1 hover:text-foreground">
+                    No Surat <ArrowUpDown className="h-3 w-3" />
+                  </button>
                 </TableHead>
-                <TableHead className="min-w-[540px]">
-                  <Button variant="ghost" size="sm" onClick={() => handleSort("judul")} className="h-8 px-2">
-                    Judul <ArrowUpDown className="ml-1 h-3 w-3" />
-                  </Button>
+                <TableHead className="min-w-[200px] text-left">
+                  <button onClick={() => handleSort("judul")} className="flex items-center gap-1 hover:text-foreground">
+                    Judul <ArrowUpDown className="h-3 w-3" />
+                  </button>
                 </TableHead>
-                <TableHead className="w-[120px]">
-                  <Button variant="ghost" size="sm" onClick={() => handleSort("unit")} className="h-8 px-2">
-                    Bagian/Unit <ArrowUpDown className="ml-1 h-3 w-3" />
-                  </Button>
+                <TableHead className="w-[120px] text-left">
+                  <button onClick={() => handleSort("unit")} className="flex items-center gap-1 hover:text-foreground">
+                    Bagian/Unit <ArrowUpDown className="h-3 w-3" />
+                  </button>
                 </TableHead>
-                <TableHead className="w-[100px]">
-                  <Button variant="ghost" size="sm" onClick={() => handleSort("jenis")} className="h-8 px-2">
-                    Jenis <ArrowUpDown className="ml-1 h-3 w-3" />
-                  </Button>
+                <TableHead className="w-[100px] text-left">
+                  <button onClick={() => handleSort("jenis")} className="flex items-center gap-1 hover:text-foreground">
+                    Jenis <ArrowUpDown className="h-3 w-3" />
+                  </button>
                 </TableHead>
-                <TableHead className="w-[130px]">
-                  <Button variant="ghost" size="sm" onClick={() => handleSort("nilai_pengajuan")} className="h-8 px-2">
-                    Nilai <ArrowUpDown className="ml-1 h-3 w-3" />
-                  </Button>
+                <TableHead className="w-[150px] text-right">
+                  <button onClick={() => handleSort("nilai_pengajuan")} className="flex items-center gap-1 ml-auto hover:text-foreground">
+                    Nilai <ArrowUpDown className="h-3 w-3" />
+                  </button>
                 </TableHead>
-                <TableHead className="w-[100px]">
-                  <Button variant="ghost" size="sm" onClick={() => handleSort("tgl_surat")} className="h-8 px-2">
-                    Tanggal <ArrowUpDown className="ml-1 h-3 w-3" />
-                  </Button>
+                <TableHead className="w-[110px] text-left">
+                  <button onClick={() => handleSort("tgl_surat")} className="flex items-center gap-1 hover:text-foreground">
+                    Tanggal <ArrowUpDown className="h-3 w-3" />
+                  </button>
                 </TableHead>
-                <TableHead className="w-[100px]">Status</TableHead>
-                <TableHead className="w-[80px]">Lampiran</TableHead>
-                <TableHead className="w-[140px] text-right">Action</TableHead>
+                <TableHead className="w-[100px] text-center">Status</TableHead>
+                <TableHead className="w-[80px] text-center">Lampiran</TableHead>
+                <TableHead className="w-[160px] text-center">Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {paginatedRequests.map((request) => (
                 <TableRow key={request.id}>
-                  <TableCell className="font-medium text-sm">{request.no_surat || "-"}</TableCell>
-                  <TableCell className="text-sm">{request.judul || "-"}</TableCell>
-                  <TableCell className="text-sm">{request.unit || "-"}</TableCell>
-                  <TableCell className="text-sm">{request.jenis || "-"}</TableCell>
-                  <TableCell className="text-sm">{formatCurrency(request.nilai_pengajuan)}</TableCell>
-                  <TableCell className="text-sm">
+                  <TableCell className="font-medium text-sm text-left">{request.no_surat || "-"}</TableCell>
+                  <TableCell className="text-sm text-left">{request.judul || "-"}</TableCell>
+                  <TableCell className="text-sm text-left">{request.unit || "-"}</TableCell>
+                  <TableCell className="text-sm text-left">{request.jenis || "-"}</TableCell>
+                  <TableCell className="text-sm text-right font-medium">{formatCurrency(request.nilai_pengajuan)}</TableCell>
+                  <TableCell className="text-sm text-left">
                     {request.tgl_surat ? new Date(request.tgl_surat).toLocaleDateString("id-ID") : "-"}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="text-center">
                     <StatusBadge status={request.status as any || "pending"} />
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="text-center">
                     {request.lampiran_url && (
                       <Button variant="ghost" size="sm" asChild>
                         <a href={request.lampiran_url} target="_blank" rel="noopener noreferrer">
@@ -368,14 +368,14 @@ export default function Pengajuan() {
                       </Button>
                     )}
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-center">
                     {request.status === "pending" && (
-                      <div className="flex gap-1 justify-end">
+                      <div className="flex gap-1 justify-center">
                         <Button
                           size="sm"
                           variant="default"
                           onClick={() => handleApprove(request.id)}
-                          className="h-8 px-2"
+                          className="h-8 px-3"
                         >
                           <Check className="h-3 w-3 mr-1" />
                           Approve
@@ -384,7 +384,7 @@ export default function Pengajuan() {
                           size="sm"
                           variant="destructive"
                           onClick={() => handleReject(request.id)}
-                          className="h-8 px-2"
+                          className="h-8 px-3"
                         >
                           <X className="h-3 w-3 mr-1" />
                           Reject
