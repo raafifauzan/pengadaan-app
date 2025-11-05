@@ -21,7 +21,7 @@ const menuItems: MenuItem[] = [
   },
   {
     icon: FileText,
-    label: "Pengajuan & Approval",
+    label: "Approval",
     path: "/pengajuan",
   },
   {
