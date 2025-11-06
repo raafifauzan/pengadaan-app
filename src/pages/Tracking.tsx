@@ -1,4 +1,4 @@
-import { StatusBadge, ProcurementStatus } from "@/components/StatusBadge";
+import { Loader2, AlertCircle } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -7,53 +7,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Progress } from "@/components/ui/progress";
-
-type TrackingItem = {
-  id: string;
-  title: string;
-  status: ProcurementStatus;
-  currentStage: string;
-  lastUpdate: string;
-  progress: number;
-};
-
-const mockTracking: TrackingItem[] = [
-  {
-    id: "REQ-001",
-    title: "Pengadaan Laptop",
-    status: "in_progress",
-    currentStage: "Vendor Selection",
-    lastUpdate: "2024-01-15 14:30",
-    progress: 45,
-  },
-  {
-    id: "REQ-002",
-    title: "Furniture Kantor",
-    status: "in_progress",
-    currentStage: "Budget Approval",
-    lastUpdate: "2024-01-16 09:15",
-    progress: 30,
-  },
-  {
-    id: "REQ-003",
-    title: "Peralatan Meeting",
-    status: "completed",
-    currentStage: "Delivered",
-    lastUpdate: "2024-01-14 16:45",
-    progress: 100,
-  },
-  {
-    id: "REQ-004",
-    title: "Software License",
-    status: "in_progress",
-    currentStage: "Form Evaluasi",
-    lastUpdate: "2024-01-17 11:20",
-    progress: 65,
-  },
-];
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { TrackingProgressBar, getStepFromStatus } from "@/components/TrackingProgressBar";
+import { useTracking } from "@/hooks/useTracking";
+import { format } from "date-fns";
 
 export default function Tracking() {
+  const { data: trackingData, isLoading, error } = useTracking();
+
   return (
     <div className="p-4 md:p-8 space-y-6">
       <div>
@@ -63,43 +24,85 @@ export default function Tracking() {
         </p>
       </div>
 
-      <div className="bg-card rounded-lg border overflow-x-auto">
-        <div className="min-w-[700px]">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[100px]">ID</TableHead>
-                <TableHead className="min-w-[180px]">Judul</TableHead>
-                <TableHead className="w-[140px]">Current Stage</TableHead>
-                <TableHead className="w-[140px]">Last Update</TableHead>
-                <TableHead className="w-[100px]">Status</TableHead>
-                <TableHead className="w-[140px]">Progress</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {mockTracking.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell className="font-medium text-sm">{item.id}</TableCell>
-                  <TableCell className="text-sm">{item.title}</TableCell>
-                  <TableCell className="text-sm">{item.currentStage}</TableCell>
-                  <TableCell className="text-sm">{item.lastUpdate}</TableCell>
-                  <TableCell>
-                    <StatusBadge status={item.status} />
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Progress value={item.progress} className="w-24" />
-                      <span className="text-sm font-medium min-w-[3rem]">
-                        {item.progress}%
-                      </span>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+      {/* Loading State */}
+      {isLoading && (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center space-y-4">
+            <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
+            <p className="text-muted-foreground">Memuat data tracking...</p>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>
+            Gagal memuat data tracking. Silakan coba lagi atau hubungi administrator.
+            <br />
+            <span className="text-xs mt-2 block">
+              {error instanceof Error ? error.message : "Unknown error"}
+            </span>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Table */}
+      {!isLoading && !error && (
+        <div className="bg-card rounded-lg border overflow-x-auto">
+          <div className="min-w-[800px]">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[120px]">Tanggal Pengajuan</TableHead>
+                  <TableHead className="min-w-[200px]">Judul Pengajuan</TableHead>
+                  <TableHead className="min-w-[500px]">Progres Terkini</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {trackingData && trackingData.length > 0 ? (
+                  trackingData.map((item) => {
+                    const currentStep = getStepFromStatus(item.status);
+                    return (
+                      <TableRow key={item.id}>
+                        <TableCell className="font-medium text-sm">
+                          {format(new Date(item.tanggalPengajuan), "dd MMM yyyy")}
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          <div>
+                            <div className="font-semibold">{item.judul || "Tanpa Judul"}</div>
+                            {item.noSurat && (
+                              <div className="text-xs text-muted-foreground mt-1">
+                                {item.noSurat}
+                              </div>
+                            )}
+                            {item.unit && (
+                              <div className="text-xs text-muted-foreground">
+                                {item.unit}
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <TrackingProgressBar currentStep={currentStep} />
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={3} className="text-center text-muted-foreground py-8">
+                      Belum ada data tracking
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
