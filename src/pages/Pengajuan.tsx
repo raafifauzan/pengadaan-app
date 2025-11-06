@@ -341,44 +341,33 @@ export default function Pengajuan() {
       {/* Table */}
       <div className="bg-card rounded-lg border overflow-x-auto">
         <div className="min-w-[800px]">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[140px] text-left">
-                  <button onClick={() => handleSort("no_surat")} className="flex items-center gap-1 hover:text-foreground">
-                    No Surat <ArrowUpDown className="h-3 w-3" />
-                  </button>
-                </TableHead>
-                <TableHead className="min-w-[200px] max-w-[400px] text-left">
-                  <button onClick={() => handleSort("judul")} className="flex items-center gap-1 hover:text-foreground">
-                    Judul <ArrowUpDown className="h-3 w-3" />
-                  </button>
-                </TableHead>
-                <TableHead className="w-[120px] text-center">
-                  <button onClick={() => handleSort("unit")} className="flex items-center gap-1 mx-auto hover:text-foreground">
-                    Bagian/Unit <ArrowUpDown className="h-3 w-3" />
-                  </button>
-                </TableHead>
-                <TableHead className="w-[100px] text-left">
-                  <button onClick={() => handleSort("jenis")} className="flex items-center gap-1 hover:text-foreground">
-                    Jenis <ArrowUpDown className="h-3 w-3" />
-                  </button>
-                </TableHead>
-                <TableHead className="w-[150px] text-right">
-                  <button onClick={() => handleSort("nilai_pengajuan")} className="flex items-center gap-1 ml-auto hover:text-foreground">
-                    Nilai <ArrowUpDown className="h-3 w-3" />
-                  </button>
-                </TableHead>
-                <TableHead className="w-[110px] text-left">
-                  <button onClick={() => handleSort("tgl_surat")} className="flex items-center gap-1 hover:text-foreground">
-                    Tanggal <ArrowUpDown className="h-3 w-3" />
-                  </button>
-                </TableHead>
-                <TableHead className="w-[100px] text-center">Status</TableHead>
-                <TableHead className="w-[80px] text-center">Lampiran</TableHead>
-                <TableHead className="w-[160px] text-center">Action</TableHead>
-              </TableRow>
-            </TableHeader>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[120px]">
+                    <button onClick={() => handleSort("tgl_surat")} className="flex items-center gap-1 hover:text-foreground">
+                      Tanggal Pengajuan <ArrowUpDown className="h-3 w-3" />
+                    </button>
+                  </TableHead>
+                  <TableHead className="min-w-[200px]">
+                    <button onClick={() => handleSort("judul")} className="flex items-center gap-1 hover:text-foreground">
+                      Judul Pengajuan <ArrowUpDown className="h-3 w-3" />
+                    </button>
+                  </TableHead>
+                  <TableHead className="w-[140px]">
+                    <button onClick={() => handleSort("nilai_pengajuan")} className="flex items-center gap-1 hover:text-foreground">
+                      Nilai Project <ArrowUpDown className="h-3 w-3" />
+                    </button>
+                  </TableHead>
+                  <TableHead className="w-[140px]">
+                    <button onClick={() => handleSort("jenis")} className="flex items-center gap-1 hover:text-foreground">
+                      Jenis Project <ArrowUpDown className="h-3 w-3" />
+                    </button>
+                  </TableHead>
+                  <TableHead className="w-[100px] text-center">Status</TableHead>
+                  <TableHead className="w-[100px] text-center">Aksi</TableHead>
+                </TableRow>
+              </TableHeader>
             <TableBody>
               {paginatedRequests.map((request) => (
                 <TableRow 
@@ -386,32 +375,32 @@ export default function Pengajuan() {
                   className="cursor-pointer hover:bg-muted/50"
                   onClick={() => setDetailDialog({ open: true, data: request })}
                 >
-                  <TableCell className="font-medium text-sm text-left">{request.no_surat || "-"}</TableCell>
-                  <TableCell className="text-sm text-left max-w-[400px] truncate" title={request.judul}>
-                    {request.judul || "-"}
+                  <TableCell className="font-medium text-sm">
+                    {request.tgl_surat ? new Date(request.tgl_surat).toLocaleDateString("id-ID", { day: '2-digit', month: 'short', year: 'numeric' }).replace('.', '') : "-"}
                   </TableCell>
-                  <TableCell className="text-sm text-center">{request.unit || "-"}</TableCell>
-                  <TableCell className="text-sm text-left">{request.jenis || "-"}</TableCell>
-                  <TableCell className="text-sm text-right font-medium">{formatCurrency(request.nilai_pengajuan)}</TableCell>
-                  <TableCell className="text-sm text-left">
-                    {request.tgl_surat ? new Date(request.tgl_surat).toLocaleDateString("id-ID") : "-"}
+                  <TableCell className="text-sm">
+                    <div>
+                      <div className="font-semibold">{request.judul || "Tanpa Judul"}</div>
+                      {request.no_surat && (
+                        <div className="text-xs text-muted-foreground mt-1">
+                          {request.no_surat}
+                        </div>
+                      )}
+                      {request.unit && (
+                        <div className="text-xs text-muted-foreground">
+                          {request.unit}
+                        </div>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-sm">
+                    Rp {request.nilai_pengajuan?.toLocaleString("id-ID") || 0}
+                  </TableCell>
+                  <TableCell className="text-sm">
+                    {request.jenis || "-"}
                   </TableCell>
                   <TableCell className="text-center">
                     <StatusBadge status={request.status as any || "pending"} />
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {request.lampiran_url && (
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        asChild
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <a href={request.lampiran_url} target="_blank" rel="noopener noreferrer">
-                          <FileText className="h-4 w-4" />
-                        </a>
-                      </Button>
-                    )}
                   </TableCell>
                   <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
                     {request.status === "pending" && (
