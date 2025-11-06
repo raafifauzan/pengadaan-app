@@ -4,6 +4,7 @@ import { Plus, Check, X, FileText, ArrowUpDown } from "lucide-react";
 import { RequestForm } from "@/components/RequestForm";
 import { useToast } from "@/hooks/use-toast";
 import { usePengajuan, useUpdatePengajuan } from "@/hooks/usePengajuan";
+import { useCreateFormEvaluasi, useFormEvaluasi } from "@/hooks/useFormEvaluasi";
 import {
   Table,
   TableBody,
@@ -122,7 +123,9 @@ const mockRequests: ProcurementRequest[] = [
 export default function Pengajuan() {
   const { toast } = useToast();
   const { data: pengajuanData, isLoading } = usePengajuan();
+  const { data: formEvaluasiData } = useFormEvaluasi();
   const updatePengajuan = useUpdatePengajuan();
+  const createFormEvaluasi = useCreateFormEvaluasi();
   const [showForm, setShowForm] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -153,6 +156,23 @@ export default function Pengajuan() {
     setConfirmDialog({ open: true, type: "reject", id });
   };
 
+  const generateKodeForm = () => {
+    const now = new Date();
+    const month = now.toLocaleString('id-ID', { month: 'short' }).toUpperCase();
+    const year = now.getFullYear();
+    
+    // Get the highest number from existing forms
+    const existingNumbers = formEvaluasiData?.map(form => {
+      const match = form.kode_form.match(/^(\d+)\//);
+      return match ? parseInt(match[1]) : 0;
+    }) || [];
+    
+    const nextNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1;
+    const paddedNumber = String(nextNumber).padStart(4, '0');
+    
+    return `${paddedNumber}/FORM-EV/PENG/${month}/${year}`;
+  };
+
   const confirmAction = async () => {
     if (confirmDialog.type === "reject" && !rejectReason.trim()) {
       toast({
@@ -164,6 +184,7 @@ export default function Pengajuan() {
     }
 
     try {
+      // Update pengajuan status
       await updatePengajuan.mutateAsync({
         id: confirmDialog.id,
         updates: {
@@ -173,10 +194,18 @@ export default function Pengajuan() {
         },
       });
 
+      // If approved, create form evaluasi automatically
       if (confirmDialog.type === "approve") {
+        const kodeForm = generateKodeForm();
+        await createFormEvaluasi.mutateAsync({
+          kode_form: kodeForm,
+          pengajuan_id: confirmDialog.id,
+          is_final: false,
+        });
+
         toast({
           title: "Pengajuan Disetujui",
-          description: `Pengajuan telah disetujui`,
+          description: `Pengajuan telah disetujui dan form evaluasi ${kodeForm} telah dibuat`,
         });
       } else {
         toast({
