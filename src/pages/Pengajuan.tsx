@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Check, X, FileText, ArrowUpDown } from "lucide-react";
+import { Plus, Check, X, FileText, ChevronsUpDown } from "lucide-react";
 import { RequestForm } from "@/components/RequestForm";
 import { useToast } from "@/hooks/use-toast";
 import { usePengajuan, useUpdatePengajuan } from "@/hooks/usePengajuan";
@@ -41,6 +41,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { StatusBadge } from "@/components/StatusBadge";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 type ProcurementStatus = "pending" | "approved" | "rejected" | "in_progress" | "completed";
@@ -262,6 +263,19 @@ export default function Pengajuan() {
     }).format(amount);
   };
 
+  const normalizeStatus = (status: string | null | undefined): ProcurementStatus => {
+    if (!status) return "pending";
+    const normalized = status.toLowerCase();
+
+    if (["approved", "disetujui"].includes(normalized)) return "approved";
+    if (["pending", "menunggu"].includes(normalized)) return "pending";
+    if (["rejected", "ditolak"].includes(normalized)) return "rejected";
+    if (["in_progress", "dalam_proses"].includes(normalized)) return "in_progress";
+    if (["completed", "selesai"].includes(normalized)) return "completed";
+
+    return "pending";
+  };
+
   // Filter, sort and pagination logic
   const sortedAndFilteredRequests = useMemo(() => {
     if (!pengajuanData) return [];
@@ -364,90 +378,106 @@ export default function Pengajuan() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[120px]">
+                  <TableHead className="w-[120px] px-3">
                     <button onClick={() => handleSort("tgl_surat")} className="flex items-center gap-1 hover:text-foreground">
-                      Tanggal Pengajuan <ArrowUpDown className="h-3 w-3" />
+                      Tanggal <ChevronsUpDown className="h-3 w-3" />
                     </button>
                   </TableHead>
-                  <TableHead className="min-w-[200px]">
+                  <TableHead className="w-[250px] px-3">
                     <button onClick={() => handleSort("judul")} className="flex items-center gap-1 hover:text-foreground">
-                      Judul Pengajuan <ArrowUpDown className="h-3 w-3" />
+                      Paket Pengajuan <ChevronsUpDown className="h-3 w-3" />
                     </button>
                   </TableHead>
-                  <TableHead className="w-[140px]">
+                  <TableHead className="w-[140px] px-3">
                     <button onClick={() => handleSort("nilai_pengajuan")} className="flex items-center gap-1 hover:text-foreground">
-                      Nilai Project <ArrowUpDown className="h-3 w-3" />
+                      Nilai Project <ChevronsUpDown className="h-3 w-3" />
                     </button>
                   </TableHead>
-                  <TableHead className="w-[140px]">
+                  <TableHead className="w-[140px] px-3">
                     <button onClick={() => handleSort("jenis")} className="flex items-center gap-1 hover:text-foreground">
-                      Jenis Project <ArrowUpDown className="h-3 w-3" />
+                      Jenis Project <ChevronsUpDown className="h-3 w-3" />
                     </button>
                   </TableHead>
-                  <TableHead className="w-[100px] text-center">Status</TableHead>
-                  <TableHead className="w-[100px] text-center">Aksi</TableHead>
+                  <TableHead className="w-[160px] px-3 text-center">Status &amp; Aksi</TableHead>
                 </TableRow>
               </TableHeader>
             <TableBody>
-              {paginatedRequests.map((request) => (
-                <TableRow 
-                  key={request.id}
-                  className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => setDetailDialog({ open: true, data: request })}
-                >
-                  <TableCell className="font-medium text-sm">
-                    {request.tgl_surat ? new Date(request.tgl_surat).toLocaleDateString("id-ID", { day: '2-digit', month: 'short', year: 'numeric' }).replace('.', '') : "-"}
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    <div>
-                      <div className="font-semibold">{request.judul || "Tanpa Judul"}</div>
-                      {request.no_surat && (
-                        <div className="text-xs text-muted-foreground mt-1">
-                          {request.no_surat}
+              {paginatedRequests.map((request) => {
+                const normalizedStatus = normalizeStatus(request.status);
+                const showPendingActions = normalizedStatus === "pending";
+
+                return (
+                  <TableRow 
+                    key={request.id}
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => setDetailDialog({ open: true, data: request })}
+                  >
+                    <TableCell className="text-sm px-3 py-2">
+                      {request.tgl_surat ? new Date(request.tgl_surat).toLocaleDateString("id-ID", { day: '2-digit', month: 'short', year: 'numeric' }).replace('.', '') : "-"}
+                    </TableCell>
+                    <TableCell className="w-[300px] max-w-[260px] text-sm whitespace-normal break-words px-3 py-2">
+                      <div>
+                        <div className="">
+                          {request.judul || "Tanpa Judul"}
                         </div>
-                      )}
-                      {request.unit && (
-                        <div className="text-xs text-muted-foreground">
-                          {request.unit}
+                        <div className="mt-2 text-xs text-muted-foreground">
+                          {request.lampiran_url && (request.no_surat || request.lampiran_url) ? (
+                            <Badge
+                              variant="outline"
+                              className="text-[11px] font-medium bg-white text-primary border-primary/20 px-1.5 py-0.5 transition-colors duration-150 hover:bg-primary/20 hover:text-primary hover:border-primary/30"
+                            >
+                              <a
+                                href={request.lampiran_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 no-underline text-primary"
+                              >
+                                {request.no_surat || request.lampiran_url.split("/").pop()}
+                              </a>
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-[11px] font-medium bg-white text-muted-foreground border-muted/20 px-1.5 py-0.5">
+                              {request.no_surat || "-"}
+                            </Badge>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    Rp {request.nilai_pengajuan?.toLocaleString("id-ID") || 0}
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    {request.jenis || "-"}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <StatusBadge status={request.status as any || "pending"} />
-                  </TableCell>
-                  <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
-                    {request.status === "pending" && (
-                      <div className="flex gap-1 justify-center">
-                        <Button
-                          size="sm"
-                          variant="default"
-                          onClick={() => handleApprove(request.id)}
-                          className="h-8 px-3"
-                        >
-                          <Check className="h-3 w-3 mr-1" />
-                          Approve
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleReject(request.id)}
-                          className="h-8 px-3"
-                        >
-                          <X className="h-3 w-3 mr-1" />
-                          Reject
-                        </Button>
                       </div>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
+                    </TableCell>
+                    <TableCell className="text-sm px-3 py-2">
+                      Rp {request.nilai_pengajuan?.toLocaleString("id-ID") || 0}
+                    </TableCell>
+                    <TableCell className="text-sm px-3 py-2">
+                      {request.jenis || "-"}
+                    </TableCell>
+                    <TableCell className="px-3 py-2 text-center">
+                      {showPendingActions ? (
+                        <div className="flex gap-1 justify-center" onClick={(e) => e.stopPropagation()}>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleApprove(request.id)}
+                            className="h-6 px-2.5 rounded-full border border-emerald-200 bg-emerald-100 text-emerald-600 hover:bg-emerald-200 hover:text-emerald-600 hover:border-emerald-200 text-[10px] font-semibold gap-1"
+                          >
+                          <Check className="h-2.5 w-2.5" />
+                          <span className="leading-none">Approve</span>
+                        </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleReject(request.id)}
+                            className="h-6 px-2.5 rounded-full border border-destructive/20 bg-destructive/10 text-destructive hover:bg-destructive/20 hover:text-destructive hover:border-destructive/20 text-[10px] font-semibold gap-1"
+                          >
+                          <X className="h-2.5 w-2.5" />
+                          <span className="leading-none">Tolak</span>
+                          </Button>
+                        </div>
+                      ) : (
+                        <StatusBadge status={normalizedStatus} />
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </div>
@@ -503,7 +533,7 @@ export default function Pengajuan() {
                   <div>
                     <Label className="text-muted-foreground">Status</Label>
                     <div className="mt-1">
-                      <StatusBadge status={detailDialog.data.status || "pending"} />
+                      <StatusBadge status={normalizeStatus(detailDialog.data.status) || "pending"} />
                     </div>
                   </div>
                   <div className="col-span-2">

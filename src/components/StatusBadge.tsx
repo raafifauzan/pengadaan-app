@@ -15,7 +15,7 @@ const statusConfig = {
   },
   approved: {
     label: "Disetujui",
-    className: "bg-success/10 text-success hover:bg-success/20 border-success/20",
+    className: "bg-emerald-100 text-emerald-600 hover:bg-emerald-200 border-emerald-200",
   },
   rejected: {
     label: "Ditolak",
