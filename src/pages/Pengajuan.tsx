@@ -5,6 +5,7 @@ import { RequestForm } from "@/components/RequestForm";
 import { useToast } from "@/hooks/use-toast";
 import { usePengajuan, useUpdatePengajuan } from "@/hooks/usePengajuan";
 import { useCreateFormEvaluasi, useFormEvaluasi } from "@/hooks/useFormEvaluasi";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Table,
   TableBody,
@@ -183,24 +184,26 @@ export default function Pengajuan() {
       return;
     }
 
-    try {
-      // Update pengajuan status
-      await updatePengajuan.mutateAsync({
-        id: confirmDialog.id,
-        updates: {
-          status: confirmDialog.type === "approve" ? "approved" : "rejected",
-          catatan: confirmDialog.type === "reject" ? rejectReason : null,
-          qc_at: new Date().toISOString(),
-        },
-      });
+    let createdFormId: string | null = null;
+    let kodeForm: string | null = null;
 
-      // If approved, create form evaluasi automatically
+    try {
       if (confirmDialog.type === "approve") {
-        const kodeForm = generateKodeForm();
-        await createFormEvaluasi.mutateAsync({
+        kodeForm = generateKodeForm();
+        const createdForm = await createFormEvaluasi.mutateAsync({
           kode_form: kodeForm,
           pengajuan_id: confirmDialog.id,
           is_final: false,
+        });
+        createdFormId = createdForm?.id ?? null;
+
+        await updatePengajuan.mutateAsync({
+          id: confirmDialog.id,
+          updates: {
+            status: "approved",
+            catatan: null,
+            qc_at: new Date().toISOString(),
+          },
         });
 
         toast({
@@ -208,6 +211,15 @@ export default function Pengajuan() {
           description: `Pengajuan telah disetujui dan form evaluasi ${kodeForm} telah dibuat`,
         });
       } else {
+        await updatePengajuan.mutateAsync({
+          id: confirmDialog.id,
+          updates: {
+            status: "rejected",
+            catatan: rejectReason,
+            qc_at: new Date().toISOString(),
+          },
+        });
+
         toast({
           title: "Pengajuan Ditolak",
           description: `Pengajuan ditolak: ${rejectReason}`,
@@ -215,6 +227,14 @@ export default function Pengajuan() {
         });
       }
     } catch (error) {
+      if (confirmDialog.type === "approve" && createdFormId) {
+        try {
+          await supabase.from("form_evaluasi").delete().eq("id", createdFormId);
+        } catch {
+          // swallow cleanup failure but surface original error to user
+        }
+      }
+
       toast({
         title: "Error",
         description: "Gagal memperbarui status pengajuan",
