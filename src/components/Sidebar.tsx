@@ -1,4 +1,4 @@
-import { LayoutDashboard, FileText, ClipboardCheck, Package, User, ChevronDown } from "lucide-react";
+import { LayoutDashboard, FileText, ClipboardCheck, Package, Wallet, ChevronDown } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -38,7 +38,7 @@ const menuItems: MenuItem[] = [
     path: "/pengadaan",
   },
   {
-    icon: User,
+    icon: Wallet,
     label: "User Konfirmasi Pembayaran",
     path: "/konfirmasi-pembayaran",
   },
