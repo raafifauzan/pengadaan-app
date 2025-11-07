@@ -89,7 +89,7 @@ export const Sidebar = () => {
                     : "text-foreground hover:bg-muted"
                 )}
               >
-                <Icon className="w-5 h-5" />
+                <Icon className="w-6 h-6" />
                 <span className="font-medium">{item.label}</span>
               </Link>
             );
@@ -109,7 +109,7 @@ export const Sidebar = () => {
                     : "hover:bg-muted"
                 )}
               >
-                <Icon className="w-5 h-5" />
+                <Icon className="w-6 h-6" />
                 <span className="font-medium flex-1 text-left">{item.label}</span>
                 <ChevronDown
                   className={cn(
