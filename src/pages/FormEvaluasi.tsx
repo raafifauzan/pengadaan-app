@@ -783,7 +783,7 @@ export default function FormEvaluasi() {
                     const progresLampiranLabel =
                       progres.pengajuan?.no_surat ||
                       (progresLampiran ? progresLampiran.split("/").pop() : "-");
-                    const isFinished = progres.status === "selesai";
+                    const isFinished = progres.pengajuan?.status === "selesai";
 
                     return (
                       <TableRow
