@@ -378,27 +378,27 @@ export default function Pengajuan() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[120px] px-3">
+                  <TableHead className="w-[120px] px-6">
                     <button onClick={() => handleSort("tgl_surat")} className="flex items-center gap-1 hover:text-foreground">
                       Tanggal <ChevronsUpDown className="h-3 w-3" />
                     </button>
                   </TableHead>
-                  <TableHead className="w-[250px] px-3">
+                  <TableHead className="w-[250px] px-4">
                     <button onClick={() => handleSort("judul")} className="flex items-center gap-1 hover:text-foreground">
                       Paket Pengajuan <ChevronsUpDown className="h-3 w-3" />
                     </button>
                   </TableHead>
-                  <TableHead className="w-[140px] px-3">
+                  <TableHead className="w-[140px] px-4">
                     <button onClick={() => handleSort("nilai_pengajuan")} className="flex items-center gap-1 hover:text-foreground">
                       Nilai Project <ChevronsUpDown className="h-3 w-3" />
                     </button>
                   </TableHead>
-                  <TableHead className="w-[140px] px-3">
+                  <TableHead className="w-[140px] px-4">
                     <button onClick={() => handleSort("jenis")} className="flex items-center gap-1 hover:text-foreground">
                       Jenis Project <ChevronsUpDown className="h-3 w-3" />
                     </button>
                   </TableHead>
-                  <TableHead className="w-[160px] px-3 text-center">Status &amp; Aksi</TableHead>
+                  <TableHead className="w-[160px] px-4 text-center">Status &amp; Aksi</TableHead>
                 </TableRow>
               </TableHeader>
             <TableBody>
@@ -412,10 +412,10 @@ export default function Pengajuan() {
                     className="cursor-pointer hover:bg-muted/50"
                     onClick={() => setDetailDialog({ open: true, data: request })}
                   >
-                    <TableCell className="text-sm px-3 py-2">
+                    <TableCell className="text-sm px-6 py-2">
                       {request.tgl_surat ? new Date(request.tgl_surat).toLocaleDateString("id-ID", { day: '2-digit', month: 'short', year: 'numeric' }).replace('.', '') : "-"}
                     </TableCell>
-                    <TableCell className="w-[300px] max-w-[260px] text-sm whitespace-normal break-words px-3 py-2">
+                    <TableCell className="w-[300px] max-w-[260px] text-sm whitespace-normal break-words px-4 py-2">
                       <div>
                         <div className="">
                           {request.judul || "Tanpa Judul"}
@@ -443,13 +443,13 @@ export default function Pengajuan() {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="text-sm px-3 py-2">
+                    <TableCell className="text-sm px-4 py-2">
                       Rp {request.nilai_pengajuan?.toLocaleString("id-ID") || 0}
                     </TableCell>
-                    <TableCell className="text-sm px-3 py-2">
+                    <TableCell className="text-sm px-4 py-2">
                       {request.jenis || "-"}
                     </TableCell>
-                    <TableCell className="px-3 py-2 text-center">
+                    <TableCell className="px-4 py-2 text-center">
                       {showPendingActions ? (
                         <div className="flex gap-1 justify-center" onClick={(e) => e.stopPropagation()}>
                           <Button

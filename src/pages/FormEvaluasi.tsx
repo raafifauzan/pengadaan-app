@@ -559,24 +559,24 @@ export default function FormEvaluasi() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[120px] px-3">
+                    <TableHead className="w-[120px] px-6">
                       <button onClick={() => handleSort("created_at")} className="flex items-center gap-1 hover:text-foreground">
                         Tanggal Pengajuan <ChevronsUpDown className="h-3 w-3" />
                       </button>
                     </TableHead>
-                    <TableHead className="w-[320px] px-3">
+                    <TableHead className="w-[320px] px-4">
                       <button onClick={() => handleSort("judul")} className="flex items-center gap-1 hover:text-foreground">
                         Paket Pengajuan <ChevronsUpDown className="h-3 w-3" />
                       </button>
                     </TableHead>
-                    <TableHead className="w-[140px] px-3">
+                    <TableHead className="w-[140px] px-4">
                       <button onClick={() => handleSort("nilai_pengajuan")} className="flex items-center gap-1 hover:text-foreground">
                         Nilai Project <ChevronsUpDown className="h-3 w-3" />
                       </button>
                     </TableHead>
-                    <TableHead className="w-[140px] px-3">Jenis Project</TableHead>
-                    <TableHead className="w-[120px] px-3">Kode Form</TableHead>
-                    <TableHead className="w-[200px] px-3 text-center">Status &amp; Aksi</TableHead>
+                    <TableHead className="w-[140px] px-4">Jenis Project</TableHead>
+                    <TableHead className="w-[120px] px-4">Kode Form</TableHead>
+                    <TableHead className="w-[200px] px-4 text-center">Status &amp; Aksi</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -598,7 +598,7 @@ export default function FormEvaluasi() {
                         onClick={() => handleDetail(evaluation)}
                         className="cursor-pointer hover:bg-muted/50"
                       >
-                        <TableCell className="text-sm px-3 py-2">
+                        <TableCell className="text-sm px-6 py-2">
                           {evaluation.pengajuan?.timestamp
                             ? new Date(evaluation.pengajuan.timestamp).toLocaleDateString("id-ID", {
                                 day: "2-digit",
@@ -607,7 +607,7 @@ export default function FormEvaluasi() {
                               }).replace(".", "")
                             : "-"}
                         </TableCell>
-                        <TableCell className="w-[320px] max-w-[280px] text-sm whitespace-normal break-words px-3 py-2">
+                        <TableCell className="w-[320px] max-w-[280px] text-sm whitespace-normal break-words px-4 py-2">
                           <div>
                             <div>{evaluation.pengajuan?.judul || "Tanpa Judul"}</div>
                             <div
@@ -639,16 +639,16 @@ export default function FormEvaluasi() {
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell className="text-sm px-3 py-2">
+                        <TableCell className="text-sm px-4 py-2">
                           Rp {evaluation.pengajuan?.nilai_pengajuan?.toLocaleString("id-ID") || 0}
                         </TableCell>
-                        <TableCell className="text-sm px-3 py-2">
+                        <TableCell className="text-sm px-4 py-2">
                           {evaluation.pengajuan?.jenis || "-"}
                         </TableCell>
-                        <TableCell className="px-3 py-2 font-mono text-sm text-muted-foreground">
+                        <TableCell className="px-4 py-2 font-mono text-sm text-muted-foreground">
                           {evaluation.kode_form}
                         </TableCell>
-                        <TableCell className="px-3 py-2 text-center" onClick={(e) => e.stopPropagation()}>
+                        <TableCell className="px-4 py-2 text-center" onClick={(e) => e.stopPropagation()}>
                           {isComplete ? (
                             <div className="flex gap-1 justify-center">
                               <Button
@@ -754,23 +754,23 @@ export default function FormEvaluasi() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[120px] px-3">
+                    <TableHead className="w-[120px] px-6">
                       <button onClick={() => handleSortProgres("kode_form")} className="flex items-center gap-1 hover:text-foreground">
                         No Form Evaluasi <ChevronsUpDown className="h-3 w-3" />
                       </button>
                     </TableHead>
-                    <TableHead className="w-[320px] px-3">
+                    <TableHead className="w-[320px] px-4">
                       <button onClick={() => handleSortProgres("judul")} className="flex items-center gap-1 hover:text-foreground">
                         Judul <ChevronsUpDown className="h-3 w-3" />
                       </button>
                     </TableHead>
                     {approvalFlow.map((flow) => (
-                      <TableHead key={flow.key} className="w-[120px] px-3 text-center">
+                      <TableHead key={flow.key} className="w-[120px] px-4 text-center">
                         {flow.label}
                       </TableHead>
                     ))}
-                    <TableHead className="w-[120px] px-3 text-center">Lampiran</TableHead>
-                    <TableHead className="w-[200px] px-3 text-center">Status &amp; Aksi</TableHead>
+                    <TableHead className="w-[120px] px-4 text-center">Lampiran</TableHead>
+                    <TableHead className="w-[200px] px-4 text-center">Status &amp; Aksi</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -791,8 +791,8 @@ export default function FormEvaluasi() {
                         onClick={() => handleDetail(progres)}
                         className="cursor-pointer hover:bg-muted/50"
                       >
-                      <TableCell className="px-3 py-2 font-mono text-sm text-muted-foreground">{progres.kode_form || "-"}</TableCell>
-                      <TableCell className="px-3 py-2 w-[320px] max-w-[280px] text-sm whitespace-normal break-words">
+                      <TableCell className="px-6 py-2 font-mono text-sm text-muted-foreground">{progres.kode_form || "-"}</TableCell>
+                      <TableCell className="px-4 py-2 w-[320px] max-w-[280px] text-sm whitespace-normal break-words">
                         <div>
                           <div>{progres.pengajuan?.judul || "-"}</div>
                           <div className="mt-2 text-xs text-muted-foreground" onClick={(e) => e.stopPropagation()}>
@@ -822,11 +822,11 @@ export default function FormEvaluasi() {
                         </div>
                       </TableCell>
                       {approvalFlow.map((flowItem, index) => (
-                        <TableCell key={flowItem.key} className="px-2 py-2 text-center align-middle" onClick={(e) => e.stopPropagation()}>
+                        <TableCell key={flowItem.key} className="px-4 py-2 text-center align-middle" onClick={(e) => e.stopPropagation()}>
                           {renderApprovalCell(progres, flowItem, index)}
                         </TableCell>
                       ))}
-                        <TableCell className="px-3 py-2 text-center" onClick={(e) => e.stopPropagation()}>
+                        <TableCell className="px-4 py-2 text-center" onClick={(e) => e.stopPropagation()}>
                           <Button
                           variant="ghost"
                           size="sm"
@@ -837,7 +837,7 @@ export default function FormEvaluasi() {
                           <span className="leading-none">Upload</span>
                         </Button>
                       </TableCell>
-                      <TableCell className="px-3 py-2 text-center" onClick={(e) => e.stopPropagation()}>
+                      <TableCell className="px-4 py-2 text-center" onClick={(e) => e.stopPropagation()}>
                         {isFinished ? (
                           <div className="flex gap-1 justify-center">
                             <Button
