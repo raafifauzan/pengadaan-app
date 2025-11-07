@@ -524,63 +524,78 @@ export default function Pengajuan() {
           </DialogHeader>
           {detailDialog.data && (
             <Card>
-              <CardContent className="pt-6 space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-muted-foreground">No Surat</Label>
-                    <p className="font-medium">{detailDialog.data.no_surat || "-"}</p>
+              <CardContent className="pt-6 space-y-5 text-sm">
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <p className="text-xs text-muted-foreground">No Surat</p>
+                    <p className="text-sm text-foreground">{detailDialog.data.no_surat || "-"}</p>
                   </div>
-                  <div>
-                    <Label className="text-muted-foreground">Status</Label>
-                    <div className="mt-1">
-                      <StatusBadge status={normalizeStatus(detailDialog.data.status) || "pending"} />
-                    </div>
+                  <div className="space-y-1.5">
+                    <p className="text-xs text-muted-foreground">Status</p>
+                    <StatusBadge status={normalizeStatus(detailDialog.data.status) || "pending"} />
                   </div>
-                  <div className="col-span-2">
-                    <Label className="text-muted-foreground">Judul</Label>
-                    <p className="font-medium">{detailDialog.data.judul || "-"}</p>
+                  <div className="space-y-1.5 md:col-span-2">
+                    <p className="text-xs text-muted-foreground">Judul</p>
+                    <p className="text-sm text-foreground">{detailDialog.data.judul || "-"}</p>
                   </div>
-                  <div>
-                    <Label className="text-muted-foreground">Bagian/Unit</Label>
-                    <p className="font-medium">{detailDialog.data.unit || "-"}</p>
+                  <div className="space-y-1.5">
+                    <p className="text-xs text-muted-foreground">Bagian/Unit</p>
+                    <p className="text-sm text-foreground">{detailDialog.data.unit || "-"}</p>
                   </div>
-                  <div>
-                    <Label className="text-muted-foreground">Jenis</Label>
-                    <p className="font-medium">{detailDialog.data.jenis || "-"}</p>
+                  <div className="space-y-1.5">
+                    <p className="text-xs text-muted-foreground">Jenis</p>
+                    <p className="text-sm text-foreground">{detailDialog.data.jenis || "-"}</p>
                   </div>
-                  <div>
-                    <Label className="text-muted-foreground">Nilai Pengajuan</Label>
-                    <p className="font-medium text-lg text-primary">{formatCurrency(detailDialog.data.nilai_pengajuan)}</p>
+                  <div className="space-y-1.5">
+                    <p className="text-xs text-muted-foreground">Nilai Pengajuan</p>
+                    <p className="text-sm text-primary">{formatCurrency(detailDialog.data.nilai_pengajuan)}</p>
                   </div>
-                  <div>
-                    <Label className="text-muted-foreground">Tanggal Surat</Label>
-                    <p className="font-medium">
+                  <div className="space-y-1.5">
+                    <p className="text-xs text-muted-foreground">Tanggal Surat</p>
+                    <p className="text-sm text-foreground">
                       {detailDialog.data.tgl_surat ? new Date(detailDialog.data.tgl_surat).toLocaleDateString("id-ID") : "-"}
                     </p>
                   </div>
                   {detailDialog.data.email && (
-                    <div className="col-span-2">
-                      <Label className="text-muted-foreground">Email Pengaju</Label>
-                      <p className="font-medium">{detailDialog.data.email}</p>
+                    <div className="space-y-1.5 md:col-span-2">
+                      <p className="text-xs text-muted-foreground">Email Pengaju</p>
+                      <p className="text-sm text-foreground">{detailDialog.data.email}</p>
                     </div>
                   )}
                   {detailDialog.data.catatan && (
-                    <div className="col-span-2">
-                      <Label className="text-muted-foreground">Catatan</Label>
-                      <p className="font-medium">{detailDialog.data.catatan}</p>
+                    <div className="space-y-1.5 md:col-span-2">
+                      <p className="text-xs text-muted-foreground">Catatan</p>
+                      <p className="text-sm text-foreground">{detailDialog.data.catatan}</p>
                     </div>
                   )}
-                  {detailDialog.data.lampiran_url && (
-                    <div className="col-span-2">
-                      <Label className="text-muted-foreground">Lampiran</Label>
-                      <Button variant="outline" size="sm" asChild className="mt-2">
-                        <a href={detailDialog.data.lampiran_url} target="_blank" rel="noopener noreferrer">
-                          <FileText className="h-4 w-4 mr-2" />
-                          Lihat Dokumen
-                        </a>
-                      </Button>
+                  <div className="space-y-1.5 md:col-span-2">
+                    <p className="text-xs text-muted-foreground">Lampiran</p>
+                    <div>
+                      {detailDialog.data.lampiran_url ? (
+                        <Badge
+                          variant="outline"
+                          className="text-[11px] font-medium bg-white text-primary border-primary/20 px-1.5 py-0.5 transition-colors duration-150 hover:bg-primary/20 hover:text-primary hover:border-primary/30"
+                        >
+                          <a
+                            href={detailDialog.data.lampiran_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 no-underline text-primary"
+                          >
+                            <FileText className="h-3 w-3" />
+                            {detailDialog.data.no_surat || detailDialog.data.lampiran_url.split("/").pop()}
+                          </a>
+                        </Badge>
+                      ) : (
+                        <Badge
+                          variant="outline"
+                          className="text-[11px] font-medium bg-white text-muted-foreground border-muted/20 px-1.5 py-0.5"
+                        >
+                          Tidak ada lampiran
+                        </Badge>
+                      )}
                     </div>
-                  )}
+                  </div>
                 </div>
               </CardContent>
             </Card>

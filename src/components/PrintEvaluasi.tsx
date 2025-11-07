@@ -54,13 +54,15 @@ export default function PrintEvaluasi({ row, onClose }: PrintEvaluasiProps) {
 
               @page {
                 size: A4;
-                margin: 15mm 5mm 15mm 0mm;
+                margin: 15mm;
               }
+
               body {
-                font-family: Arial, Helvetica, sans-serif;
+                font-family: "Helvetica", "Segoe UI", Arial, sans-serif;
                 font-size: 11pt;
-                line-height: 1.35;
-                color: #000;
+                line-height: 1.45;
+                color: #0f0f0f;
+                background: #fff;
               }
 
               .container {
@@ -68,74 +70,123 @@ export default function PrintEvaluasi({ row, onClose }: PrintEvaluasiProps) {
                 margin: 0 auto;
               }
 
-              h1, h2, h3, h4, h5, h6 { margin: 0; }
-              .title { text-align: center; }
-              .title h2 { font-size: 14pt; font-weight: 700; }
-              .title h3 { font-size: 12pt; font-weight: 600; margin-top: 4px; }
-              .form-number { text-align: center; margin: 10px 0 18px; }
+              .sheet {
+                padding: 4mm 4mm 9mm;
+              }
 
-              table.outer {
-              width: 100%;
-              table-layout: fixed;
+              .sheet-header {
+                text-align: center;
+                margin-bottom: 16px;
+              }
+
+              .sheet-header h1 {
+                font-size: 18px;
+                margin: 0;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+              }
+
+              .sheet-header p {
+                margin: 6px 0 0;
+                font-size: 12px;
+                letter-spacing: 0.04em;
+              }
+
+              .form-number {
+                margin-top: 4px;
+                font-size: 13px;
+                letter-spacing: 0.05em;
+              }
+
+              .section {
+                margin-top: 14px;
+              }
+
+              .section-title {
+                font-size: 12px;
+                text-transform: uppercase;
+                font-weight: bold;
+                margin-bottom: 8px;
+                letter-spacing: 0.08em;
               }
 
               table {
                 width: 100%;
                 border-collapse: collapse;
-              }
-              .outer {
-                border: 1px solid #000;
-              }
-              th, td {
-                border: 1px solid #000;
-                padding: 6px 8px;
-                vertical-align: top;
+                font-size: 11px;
               }
 
-              .row-2col td {
-                border: none !important;
-                padding: 4px 6px;
+              .info-table td {
+                padding: 6px 11px;
+                border: 1px solid #d1d5db;
+                text-align: left;
+                vertical-align: middle;
               }
-              .row-2col td:first-child {
-                width: 26%;
+
+              .info-table td:first-child {
+                width: 24%;
                 font-weight: 600;
-                background: #f7f7f7;
+                background: #f9fafb;
+              }
+
+              .info-table td:last-child {
+                width: 76%;
+              }
+
+              .evaluation-table td,
+              .evaluation-table th {
+                border: 1px solid #d1d5db;
+                padding: 6px 11px;
+                vertical-align: middle;
+              }
+
+              .evaluation-table th {
+                width: 24%;
                 text-align: left;
-                white-space: nowrap;
+                background: #f3f4f6;
               }
-              .row-2col td:last-child {
-                width: 74%;
+
+              .evaluation-table td {
+                width: 76%;
                 text-align: left;
               }
 
+              .notes-cell {
+                height: 65px;
+              }
 
+              .sign-table {
+                table-layout: fixed;
+              }
 
-              .section-title {
-                font-weight: 700;
-                background: #efefef;
+              .sign-table th,
+              .sign-table td {
+                border: 1px solid #d1d5db;
+                padding: 9px 7px;
+              }
+
+              .sign-table th {
+                background: #f3f4f6;
+                font-size: 11px;
+                text-align: center;
+                vertical-align: middle;
+              }
+
+              .sign-table td {
                 text-align: left;
-                padding: 8px;
+                vertical-align: bottom;
               }
 
-              .inner {
-                width: 100%;
-                border-collapse: collapse;
-              }
-              .inner th, .inner td {
-                border: 1px solid #000;
-                padding: 6px 8px;
+              .sign-space {
+                height: 70px;
               }
 
-              .ttd-space {
-                height: 80px;
-              }
-
-              .italic {
+              .footer-note {
+                margin-top: 18px;
+                font-size: 10px;
+                text-align: center;
                 font-style: italic;
-                margin-top: 16px;
               }
-
-              .avoid-break { page-break-inside: avoid; }
             </style>
           </head>
           <body>
@@ -171,151 +222,168 @@ export default function PrintEvaluasi({ row, onClose }: PrintEvaluasiProps) {
     });
   };
 
+  const approvalGroups = [
+    {
+      title: "Evaluasi Teknis & Biaya",
+      roles: ["Sekretaris Perusahaan", "SEVP Operation"],
+    },
+    {
+      title: "Evaluasi Anggaran & Pendanaan",
+      roles: ["Divisi Keuangan", "SEVP Business Support"],
+    },
+    {
+      title: "Persetujuan Pelaksanaan",
+      roles: ["Direktur Utama"],
+    },
+  ];
+  const approvalRoles = approvalGroups.flatMap((group) => group.roles);
+
+  const processingFlow = ["Bagian Pengadaan", "Panitia Pengadaan", "Tim HPS"];
+
   return (
     <div style={{ display: "none" }}>
       <div ref={printRef}>
-        <div className="title">
-          <h2>FORM EVALUASI PENGADAAN BARANG DAN JASA</h2>
-          <h3>LPP AGRO NUSANTARA</h3>
-        </div>
-        <div className="form-number">
-          <strong>Nomor:</strong> {row.kodeForm || "-"}
-        </div>
+        <div className="sheet">
+          <header className="sheet-header">
+            <p>PT LPP AGRO NUSANTARA</p>
+            <h1>FORM EVALUASI PENGADAAN BARANG/JASA</h1>
+            <div className="form-number">
+              NO : <strong>{row.kodeForm || "-"}</strong>
+            </div>
+          </header>
 
-        <table className="outer">
-          <tbody>
-            <tr>
-              <td className="section-title" colSpan={2}>
-                Usulan
-              </td>
-            </tr>
-            <tr className="row-2col">
-              <td>Nama Proyek</td>
-              <td>{row.judul || "-"}</td>
-            </tr>
-            <tr className="row-2col">
-              <td>Diusulkan Oleh</td>
-              <td>{row.unit || "-"}</td>
-            </tr>
-            <tr className="row-2col">
-              <td>Nilai Proyek</td>
-              <td>Rp {rupiah(row.nilaiPengajuan)}</td>
-            </tr>
-            <tr className="row-2col">
-              <td>Sumber Anggaran</td>
-              <td>{row.jenis || "-"}</td>
-            </tr>
-            <tr className="row-2col">
-              <td>Tanggal Usulan</td>
-              <td>{tanggal(row.tanggalForm)}</td>
-            </tr>
+          <section className="section">
+            <div className="section-title">Usulan</div>
+            <table className="info-table">
+              <tbody>
+                <tr>
+                  <td>Nama Pengajuan</td>
+                  <td>{row.judul || "-"}</td>
+                </tr>
+                <tr>
+                  <td>Nomor Surat</td>
+                  <td>{row.noSurat || "-"}</td>
+                </tr>
+                <tr>
+                  <td>Unit Pengusul</td>
+                  <td>{row.unit || "-"}</td>
+                </tr>
+                <tr>
+                  <td>Tanggal Usulan</td>
+                  <td>{tanggal(row.tanggalForm)}</td>
+                </tr>
+                <tr>
+                  <td>Jenis Pengadaan</td>
+                  <td>{row.jenis || "-"}</td>
+                </tr>
+                <tr>
+                  <td>Alokasi Anggaran</td>
+                  <td>
+                    {row.namaAnggaran || "-"}
+                    {row.namaAnggaran || row.regAnggaran ? " - " : ""}
+                    {row.regAnggaran || "-"}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
 
-            <tr>
-              <td className="section-title" colSpan={2}>
-                Evaluasi
-              </td>
-            </tr>
-            <tr className="row-2col">
-              <td>Nilai Hasil Evaluasi</td>
-              <td>Rp {rupiah(row.anggaranHps)}</td>
-            </tr>
-            <tr className="row-2col">
-              <td>Sumber Anggaran</td>
-              <td>
-                {row.namaAnggaran || "-"}
-                {row.namaAnggaran || row.regAnggaran ? " - " : ""}
-                {row.regAnggaran || "-"}
-              </td>
-            </tr>
-            <tr className="row-2col">
-              <td>Catatan</td>
-              <td style={{ height: "48px" }} />
-            </tr>
+          <section className="section">
+            <div className="section-title">Hasil Evaluasi</div>
+            <table className="evaluation-table">
+              <tbody>
+                <tr>
+                  <th>Nilai Pengajuan</th>
+                  <td>Rp {rupiah(row.nilaiPengajuan)}</td>
+                </tr>
+                <tr>
+                  <th>Nilai Evaluasi</th>
+                  <td>Rp {rupiah(row.anggaranHps)}</td>
+                </tr>
+                <tr>
+                  <th>Alokasi Anggaran</th>
+                  <td>
+                    {row.namaAnggaran || "-"}
+                    {row.namaAnggaran || row.regAnggaran ? " - " : ""}
+                    {row.regAnggaran || "-"}
+                  </td>
+                </tr>
+                <tr>
+                  <th>Catatan</th>
+                  <td className="notes-cell" />
+                </tr>
+              </tbody>
+            </table>
+          </section>
 
-            <tr>
-              <td className="section-title" colSpan={2}>
-                Persetujuan Evaluasi
-              </td>
-            </tr>
-            <tr>
-              <td colSpan={2} className="avoid-break">
-                <table className="inner">
-                  <thead>
-                    <tr>
-                      <th colSpan={2}>Evaluasi Teknis dan Biaya</th>
-                      <th colSpan={2}>Evaluasi Anggaran dan Pendanaan</th>
-                      <th>Persetujuan Pelaksanaan</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>Sekretaris Perusahaan</td>
-                      <td>SEVP Operation</td>
-                      <td>Keuangan</td>
-                      <td>SEVP Business Support</td>
-                      <td>Direktur</td>
-                    </tr>
-                    <tr>
-                      <td className="ttd-space" />
-                      <td className="ttd-space" />
-                      <td className="ttd-space" />
-                      <td className="ttd-space" />
-                      <td className="ttd-space" />
-                    </tr>
-                    <tr>
-                      <td>Tanggal:</td>
-                      <td>Tanggal:</td>
-                      <td>Tanggal:</td>
-                      <td>Tanggal:</td>
-                      <td>Tanggal:</td>
-                    </tr>
-                    <tr>
-                      <td>Catatan:</td>
-                      <td>Catatan:</td>
-                      <td>Catatan:</td>
-                      <td>Catatan:</td>
-                      <td>Catatan:</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </td>
-            </tr>
+          <section className="section">
+            <table className="sign-table">
+              <thead>
+                <tr>
+                  {approvalGroups.map((group) => (
+                    <th key={group.title} colSpan={group.roles.length}>
+                      {group.title}
+                    </th>
+                  ))}
+                </tr>
+                <tr>
+                  {approvalRoles.map((role) => (
+                    <th key={role}>{role}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  {approvalRoles.map((role) => (
+                    <td key={`${role}-sign`} className="sign-space" />
+                  ))}
+                </tr>
+                <tr>
+                  {approvalRoles.map((role) => (
+                    <td key={`${role}-date`}>Tgl:</td>
+                  ))}
+                </tr>
+                <tr>
+                  {approvalRoles.map((role) => (
+                    <td key={`${role}-note`}>Catatan:</td>
+                  ))}
+                </tr>
+              </tbody>
+            </table>
+          </section>
 
-            <tr>
-              <td className="section-title" colSpan={2}>
-                Diterima dan Diproses oleh
-              </td>
-            </tr>
-            <tr>
-              <td colSpan={2} className="avoid-break">
-                <table className="inner">
-                  <thead>
-                    <tr>
-                      <th>Bagian Pengadaan</th>
-                      <th>Panitia Pengadaan</th>
-                      <th>Tim HPS</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td style={{ height: "60px" }}></td>
-                      <td></td>
-                      <td></td>
-                    </tr>
-                    <tr>
-                      <td>Catatan:</td>
-                      <td>Catatan:</td>
-                      <td>Catatan:</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+          <section className="section">
+            <table className="sign-table">
+              <thead>
+                <tr>
+                  {processingFlow.map((role) => (
+                    <th key={role}>{role}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  {processingFlow.map((role) => (
+                    <td key={`${role}-sign`} className="sign-space" />
+                  ))}
+                </tr>
+                <tr>
+                  {processingFlow.map((role) => (
+                    <td key={`${role}-date`}>Tgl:</td>
+                  ))}
+                </tr>
+                <tr>
+                  {processingFlow.map((role) => (
+                    <td key={`${role}-note`}>Catatan:</td>
+                  ))}
+                </tr>
+              </tbody>
+            </table>
+          </section>
 
-        <div className="italic">
-          Dokumen ini dicetak otomatis dari sistem evaluasi.
+          <div className="footer-note">
+            Dokumen ini dicetak otomatis dari Sistem Evaluasi Pengadaan
+          </div>
         </div>
       </div>
     </div>

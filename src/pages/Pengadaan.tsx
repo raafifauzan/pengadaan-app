@@ -112,48 +112,59 @@ export default function Pengadaan() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[100px]">ID</TableHead>
-                    <TableHead className="min-w-[180px]">Judul</TableHead>
-                    <TableHead className="w-[150px]">Vendor</TableHead>
-                    <TableHead className="w-[130px]">Amount</TableHead>
-                    <TableHead className="w-[100px]">Status</TableHead>
-                    <TableHead className="w-[120px]">Est. Delivery</TableHead>
-                    <TableHead className="w-[180px] text-right">Action</TableHead>
+                    <TableHead className="w-[100px] px-3">ID</TableHead>
+                    <TableHead className="w-[220px] px-3">Judul</TableHead>
+                    <TableHead className="w-[180px] px-3">Vendor</TableHead>
+                    <TableHead className="w-[140px] px-3">Nilai</TableHead>
+                    <TableHead className="w-[120px] px-3 text-center">Status</TableHead>
+                    <TableHead className="w-[140px] px-3 text-center">Est. Delivery</TableHead>
+                    <TableHead className="w-[200px] px-3 text-right">Status &amp; Aksi</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {mockPengadaan
                     .filter((item) => item.status === "waiting_po")
                     .map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell className="font-medium text-sm">{item.id}</TableCell>
-                        <TableCell className="text-sm">{item.title}</TableCell>
-                        <TableCell className="text-sm">{item.vendor}</TableCell>
-                        <TableCell className="text-sm">{formatCurrency(item.amount)}</TableCell>
-                        <TableCell>
+                      <TableRow key={item.id} className="hover:bg-muted/50">
+                        <TableCell className="px-3 py-2 font-mono text-sm text-muted-foreground">
+                          {item.id}
+                        </TableCell>
+                        <TableCell className="px-3 py-2 w-[220px] max-w-[220px] text-sm whitespace-normal break-words">
+                          {item.title}
+                        </TableCell>
+                        <TableCell className="px-3 py-2 text-sm">
+                          {item.vendor}
+                        </TableCell>
+                        <TableCell className="px-3 py-2 text-sm">
+                          {formatCurrency(item.amount)}
+                        </TableCell>
+                        <TableCell className="px-3 py-2 text-center">
                           <StatusBadge status={item.status as any} />
                         </TableCell>
-                        <TableCell className="text-sm">
-                          {item.estimatedDelivery &&
-                            new Date(item.estimatedDelivery).toLocaleDateString("id-ID")}
+                        <TableCell className="px-3 py-2 text-sm text-center">
+                          {item.estimatedDelivery
+                            ? new Date(item.estimatedDelivery).toLocaleDateString("id-ID")
+                            : "-"}
                         </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex gap-2 justify-end">
+                        <TableCell className="px-3 py-2 text-right">
+                          <div className="flex gap-1 justify-end">
                             <Button
                               size="sm"
-                              variant="default"
+                              variant="ghost"
                               onClick={() => handleApprove(item.id)}
+                              className="h-6 px-2.5 rounded-full border border-emerald-200 bg-emerald-100 text-emerald-600 hover:bg-emerald-200 hover:text-emerald-600 hover:border-emerald-200 text-[10px] font-semibold gap-1"
                             >
-                              <Check className="h-4 w-4 mr-1" />
-                              Approve PO
+                              <Check className="h-2.5 w-2.5" />
+                              <span className="leading-none">Setujui</span>
                             </Button>
                             <Button
                               size="sm"
-                              variant="destructive"
+                              variant="ghost"
                               onClick={() => handleReject(item.id)}
+                              className="h-6 px-2.5 rounded-full border border-destructive/20 bg-destructive/10 text-destructive hover:bg-destructive/20 hover:text-destructive hover:border-destructive/20 text-[10px] font-semibold gap-1"
                             >
-                              <X className="h-4 w-4 mr-1" />
-                              Reject
+                              <X className="h-2.5 w-2.5" />
+                              <span className="leading-none">Tolak</span>
                             </Button>
                           </div>
                         </TableCell>
@@ -171,31 +182,42 @@ export default function Pengadaan() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[100px]">ID</TableHead>
-                    <TableHead className="min-w-[180px]">Judul</TableHead>
-                    <TableHead className="w-[150px]">Vendor</TableHead>
-                    <TableHead className="w-[120px]">PO Number</TableHead>
-                    <TableHead className="w-[130px]">Amount</TableHead>
-                    <TableHead className="w-[100px]">Status</TableHead>
-                    <TableHead className="w-[120px]">Est. Delivery</TableHead>
+                    <TableHead className="w-[100px] px-3">ID</TableHead>
+                    <TableHead className="w-[220px] px-3">Judul</TableHead>
+                    <TableHead className="w-[180px] px-3">Vendor</TableHead>
+                    <TableHead className="w-[140px] px-3">PO Number</TableHead>
+                    <TableHead className="w-[140px] px-3">Nilai</TableHead>
+                    <TableHead className="w-[120px] px-3 text-center">Status</TableHead>
+                    <TableHead className="w-[140px] px-3 text-center">Est. Delivery</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {mockPengadaan
                     .filter((item) => item.status !== "waiting_po")
                     .map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell className="font-medium text-sm">{item.id}</TableCell>
-                        <TableCell className="text-sm">{item.title}</TableCell>
-                        <TableCell className="text-sm">{item.vendor}</TableCell>
-                        <TableCell className="text-sm">{item.poNumber || "-"}</TableCell>
-                        <TableCell className="text-sm">{formatCurrency(item.amount)}</TableCell>
-                        <TableCell>
+                      <TableRow key={item.id} className="hover:bg-muted/50">
+                        <TableCell className="px-3 py-2 font-mono text-sm text-muted-foreground">
+                          {item.id}
+                        </TableCell>
+                        <TableCell className="px-3 py-2 w-[220px] max-w-[220px] text-sm whitespace-normal break-words">
+                          {item.title}
+                        </TableCell>
+                        <TableCell className="px-3 py-2 text-sm">
+                          {item.vendor}
+                        </TableCell>
+                        <TableCell className="px-3 py-2 text-sm font-mono text-muted-foreground">
+                          {item.poNumber || "-"}
+                        </TableCell>
+                        <TableCell className="px-3 py-2 text-sm">
+                          {formatCurrency(item.amount)}
+                        </TableCell>
+                        <TableCell className="px-3 py-2 text-center">
                           <StatusBadge status={item.status as any} />
                         </TableCell>
-                        <TableCell className="text-sm">
-                          {item.estimatedDelivery &&
-                            new Date(item.estimatedDelivery).toLocaleDateString("id-ID")}
+                        <TableCell className="px-3 py-2 text-sm text-center">
+                          {item.estimatedDelivery
+                            ? new Date(item.estimatedDelivery).toLocaleDateString("id-ID")
+                            : "-"}
                         </TableCell>
                       </TableRow>
                     ))}

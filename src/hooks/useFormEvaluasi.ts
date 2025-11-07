@@ -22,6 +22,7 @@ export function useFormEvaluasi() {
             jenis,
             nilai_pengajuan,
             tgl_surat,
+            lampiran_url,
             status,
             timestamp
           )
