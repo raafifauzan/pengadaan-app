@@ -1,4 +1,4 @@
-import { useState, useMemo, type ComponentProps } from "react";
+import { useState, useMemo, useEffect, type ComponentProps } from "react";
 import { Button } from "@/components/ui/button";
 import { Printer, FileText, Upload, ChevronsUpDown, PenLine, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -199,7 +199,9 @@ const compareValues = (aValue: string | number | null, bValue: string | number |
   return 0;
 };
 
-export default function FormEvaluasi() {
+type TabKey = "kelengkapan" | "progres";
+
+export default function FormEvaluasi({ defaultTab = "kelengkapan" }: { defaultTab?: TabKey } = {}) {
   const { toast } = useToast();
   const { data: formEvaluasiData, isLoading } = useFormEvaluasi();
   const updateFormEvaluasi = useUpdateFormEvaluasi();
@@ -220,7 +222,8 @@ export default function FormEvaluasi() {
   const [detailDialog, setDetailDialog] = useState<{
     open: boolean;
     data: FormEvaluasiRecord | null;
-  }>({ open: false, data: null });
+    readonly: boolean;
+  }>({ open: false, data: null, readonly: false });
   const [evaluatorForm, setEvaluatorForm] = useState({
     sumberAnggaran: "",
     namaAnggaran: "",
@@ -228,6 +231,10 @@ export default function FormEvaluasi() {
     nilaiEvaluasi: "",
   });
   const [printData, setPrintData] = useState<PrintEvaluasiRow | null>(null);
+  const [tabValue, setTabValue] = useState<TabKey>(defaultTab);
+  useEffect(() => {
+    setTabValue(defaultTab);
+  }, [defaultTab]);
   const approvalFlow = [
     { key: "sekper", label: "Sekretaris Perusahaan", statusKey: "approval1" as const },
     { key: "sevpOperation", label: "SEVP Operation", statusKey: "approval2" as const },
@@ -357,14 +364,17 @@ export default function FormEvaluasi() {
     setPrintData(printRow);
   };
 
-  const handleDetail = (formEv: FormEvaluasiRecord) => {
-    setDetailDialog({ open: true, data: formEv });
-    setEvaluatorForm({
-      sumberAnggaran: formEv.pengajuan?.jenis || "",
-      namaAnggaran: formEv.nama_anggaran || "",
-      regAnggaran: formEv.reg_anggaran || "",
-      nilaiEvaluasi: formEv.anggaran_hps?.toString() || "",
-    });
+  const handleDetail = (formEv: FormEvaluasiRecord, options?: { readonly?: boolean }) => {
+    const readonly = options?.readonly ?? false;
+    setDetailDialog({ open: true, data: formEv, readonly });
+    if (!readonly) {
+      setEvaluatorForm({
+        sumberAnggaran: formEv.pengajuan?.jenis || "",
+        namaAnggaran: formEv.nama_anggaran || "",
+        regAnggaran: formEv.reg_anggaran || "",
+        nilaiEvaluasi: formEv.anggaran_hps?.toString() || "",
+      });
+    }
   };
 
   const handleSubmitEvaluator = async () => {
@@ -518,7 +528,7 @@ export default function FormEvaluasi() {
         </p>
       </div>
 
-      <Tabs defaultValue="kelengkapan" className="space-y-6">
+      <Tabs value={tabValue} onValueChange={(value) => setTabValue(value as TabKey)} className="space-y-6">
         <TabsList>
           <TabsTrigger value="kelengkapan">Kelengkapan Evaluasi</TabsTrigger>
           <TabsTrigger value="progres">Progres Dokumen</TabsTrigger>
@@ -788,7 +798,7 @@ export default function FormEvaluasi() {
                     return (
                       <TableRow
                         key={progres.id}
-                        onClick={() => handleDetail(progres)}
+                        onClick={() => handleDetail(progres, { readonly: true })}
                         className="cursor-pointer hover:bg-muted/50"
                       >
                       <TableCell className="px-6 py-2 font-mono text-sm text-muted-foreground">{progres.kode_form || "-"}</TableCell>
@@ -852,7 +862,7 @@ export default function FormEvaluasi() {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => handleDetail(progres)}
+                              onClick={() => handleDetail(progres, { readonly: true })}
                               className="h-6 px-2.5 rounded-full text-[10px]"
                             >
                               Detail
@@ -862,7 +872,7 @@ export default function FormEvaluasi() {
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => handleDetail(progres)}
+                            onClick={() => handleDetail(progres, { readonly: true })}
                             className="h-6 px-3 rounded-full border border-[#facc15] bg-[#fef9c3] text-[#ca8a04] hover:bg-[#fde68a] hover:border-[#facc15] hover:text-[#ca8a04] text-[10px] font-semibold"
                           >
                             Perbarui Progres
@@ -919,7 +929,7 @@ export default function FormEvaluasi() {
       )}
 
       {/* Detail Dialog */}
-      <Dialog open={detailDialog.open} onOpenChange={(open) => setDetailDialog({ open, data: null })}>
+      <Dialog open={detailDialog.open} onOpenChange={(open) => setDetailDialog({ open, data: null, readonly: false })}>
         <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto text-sm">
           <DialogHeader>
             <DialogTitle>Detail Evaluasi</DialogTitle>
@@ -988,51 +998,74 @@ export default function FormEvaluasi() {
                 </div>
               </div>
 
-              {/* Evaluator Form */}
-              <div className="space-y-3">
-                <h3 className="text-lg font-semibold">Form Evaluator</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <p className="text-xs text-muted-foreground">Nama Anggaran</p>
-                    <Input
-                      value={evaluatorForm.namaAnggaran}
-                      onChange={(e) =>
-                        setEvaluatorForm({ ...evaluatorForm, namaAnggaran: e.target.value })
-                      }
-                      placeholder="Contoh: Belanja Modal TI"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <p className="text-xs text-muted-foreground">Reg. Anggaran</p>
-                    <Input
-                      type="number"
-                      value={evaluatorForm.regAnggaran}
-                      onChange={(e) =>
-                        setEvaluatorForm({ ...evaluatorForm, regAnggaran: e.target.value })
-                      }
-                      placeholder="Nomor registrasi"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <p className="text-xs text-muted-foreground">Nilai Evaluasi</p>
-                    <Input
-                      type="number"
-                      value={evaluatorForm.nilaiEvaluasi}
-                      onChange={(e) =>
-                        setEvaluatorForm({ ...evaluatorForm, nilaiEvaluasi: e.target.value })
-                      }
-                      placeholder="Nilai hasil evaluasi"
-                    />
+              {detailDialog.readonly ? (
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold">Ringkasan Evaluasi</h3>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <p className="text-xs text-muted-foreground">Nama Anggaran</p>
+                      <p className="text-sm text-foreground">{detailDialog.data.nama_anggaran || "-"}</p>
+                    </div>
+                    <div className="space-y-1.5">
+                      <p className="text-xs text-muted-foreground">Reg. Anggaran</p>
+                      <p className="text-sm text-foreground">{detailDialog.data.reg_anggaran || "-"}</p>
+                    </div>
+                    <div className="space-y-1.5">
+                      <p className="text-xs text-muted-foreground">Nilai Evaluasi</p>
+                      <p className="text-sm text-foreground">
+                        {detailDialog.data.anggaran_hps
+                          ? formatCurrency(detailDialog.data.anggaran_hps)
+                          : "-"}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold">Form Evaluator</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <p className="text-xs text-muted-foreground">Nama Anggaran</p>
+                      <Input
+                        value={evaluatorForm.namaAnggaran}
+                        onChange={(e) =>
+                          setEvaluatorForm({ ...evaluatorForm, namaAnggaran: e.target.value })
+                        }
+                        placeholder="Contoh: Belanja Modal TI"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <p className="text-xs text-muted-foreground">Reg. Anggaran</p>
+                      <Input
+                        type="number"
+                        value={evaluatorForm.regAnggaran}
+                        onChange={(e) =>
+                          setEvaluatorForm({ ...evaluatorForm, regAnggaran: e.target.value })
+                        }
+                        placeholder="Nomor registrasi"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <p className="text-xs text-muted-foreground">Nilai Evaluasi</p>
+                      <Input
+                        type="number"
+                        value={evaluatorForm.nilaiEvaluasi}
+                        onChange={(e) =>
+                          setEvaluatorForm({ ...evaluatorForm, nilaiEvaluasi: e.target.value })
+                        }
+                        placeholder="Nilai hasil evaluasi"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDetailDialog({ open: false, data: null })}>
-              Cancel
+            <Button variant="outline" onClick={() => setDetailDialog({ open: false, data: null, readonly: false })}>
+              {detailDialog.readonly ? "Tutup" : "Cancel"}
             </Button>
-            <Button onClick={handleSubmitEvaluator}>Submit</Button>
+            {!detailDialog.readonly && <Button onClick={handleSubmitEvaluator}>Submit</Button>}
           </DialogFooter>
         </DialogContent>
       </Dialog>
