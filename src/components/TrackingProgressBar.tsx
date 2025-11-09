@@ -83,25 +83,28 @@ export function TrackingProgressBar({ currentStep, className, isRejected = false
             </div>
 
             {index < steps.length - 1 && (
-              <div className="flex-1 flex items-center px-1 -translate-y-1">
-                <div className="relative w-full h-4">
-                  {/* Base dashed connector */}
-                  <div className="absolute inset-0 flex items-center pointer-events-none">
-                    <div className="w-full border-t-2 border-dashed border-muted-foreground/40" />
+              <div className="flex-1 flex items-center px-1">
+                <div className="relative w-full h-1">
+                  {/* Base line - always visible for pending steps */}
+                  <div className="absolute inset-0 flex items-center">
+                    <div className={cn(
+                      "w-full h-1 rounded-full transition-all duration-500",
+                      stepIndex > currentIndex ? "bg-muted-foreground/30" : "bg-transparent"
+                    )} />
                   </div>
 
                   {/* Progress fill */}
                   <div
                     className={cn(
-                      "absolute left-0 top-1/2 -translate-y-1/2 h-[2px] rounded-full transition-all duration-500 ease-in-out shadow-sm",
+                      "absolute left-0 top-0 h-1 rounded-full transition-all duration-500 ease-in-out",
                       stepIndex < currentIndex
                         ? isRejected
-                          ? "bg-destructive w-full"
-                          : "bg-primary w-full"
+                          ? "bg-destructive w-full shadow-sm"
+                          : "bg-primary w-full shadow-sm"
                         : stepIndex === currentIndex
                         ? isRejected
-                          ? "bg-destructive w-1/2"
-                          : "bg-primary w-1/2"
+                          ? "bg-destructive w-1/2 shadow-sm"
+                          : "bg-primary w-1/2 shadow-sm"
                         : "w-0"
                     )}
                   />
