@@ -83,13 +83,17 @@ export function TrackingProgressBar({ currentStep, className, isRejected = false
             </div>
 
             {index < steps.length - 1 && (
-              <div className="flex-1 flex items-center px-1">
+              <div className="flex-1 flex items-center px-1 -translate-y-5">
                 <div className="relative w-full h-1">
-                  {/* Base line - always visible for pending steps */}
+                  {/* Base line - gray for pending or remaining half */}
                   <div className="absolute inset-0 flex items-center">
                     <div className={cn(
                       "w-full h-1 rounded-full transition-all duration-500",
-                      stepIndex > currentIndex ? "bg-muted-foreground/30" : "bg-transparent"
+                      stepIndex > currentIndex 
+                        ? "bg-muted-foreground/30" 
+                        : stepIndex === currentIndex
+                        ? "bg-muted-foreground/30"
+                        : "bg-transparent"
                     )} />
                   </div>
 
