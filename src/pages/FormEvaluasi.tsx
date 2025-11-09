@@ -400,7 +400,7 @@ export default function FormEvaluasi({ defaultTab = "kelengkapan" }: { defaultTa
         title: "Data Evaluasi Tersimpan",
         description: "Data evaluasi berhasil disimpan",
       });
-      setDetailDialog({ open: false, data: null });
+      setDetailDialog({ open: false, data: null, readonly: false });
       setEvaluatorForm({
         sumberAnggaran: "",
         namaAnggaran: "",

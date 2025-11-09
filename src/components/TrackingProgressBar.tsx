@@ -83,11 +83,11 @@ export function TrackingProgressBar({ currentStep, className, isRejected = false
             </div>
 
             {index < steps.length - 1 && (
-              <div className="flex-1 flex items-center px-4 -translate-y-1">
-                <div className="relative w-full h-[4px] rounded-full bg-muted-foreground/30">
+              <div className="flex-1 flex items-center px-2 -translate-y-1">
+                <div className="relative w-full h-[3px] rounded-full bg-border">
                   <div
                     className={cn(
-                      "absolute top-0 left-0 h-full rounded-full transition-all duration-500 ease-in-out",
+                      "absolute top-0 left-0 h-full rounded-full transition-all duration-500 ease-in-out shadow-sm",
                       stepIndex < currentIndex
                         ? isRejected
                           ? "bg-destructive w-full"
