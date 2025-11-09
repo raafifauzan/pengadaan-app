@@ -58,7 +58,7 @@ export default function Tracking() {
                 <TableRow>
                   <TableHead className="w-[120px]">Tanggal Pengajuan</TableHead>
                   <TableHead className="min-w-[200px]">Judul Pengajuan</TableHead>
-                  <TableHead className="min-w-[500px]">Progres Terkini</TableHead>
+                  <TableHead className="min-w-[720px] md:min-w-[820px]">Progres Terkini</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

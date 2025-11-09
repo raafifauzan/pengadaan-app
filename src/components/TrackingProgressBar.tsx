@@ -48,8 +48,8 @@ export function TrackingProgressBar({ currentStep, className, isRejected = false
         const isPending = stepIndex > currentIndex;
 
         return (
-          <div key={step.key} className="flex items-center flex-1 min-w-[80px]">
-            <div className="flex flex-col items-center text-center min-w-[74px] gap-2">
+          <div key={step.key} className="flex items-center flex-1 min-w-[72px]">
+            <div className="flex flex-col items-center text-center min-w-[64px] gap-2">
               <div
                 className={cn(
                   "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-500 ease-in-out shadow-sm",
@@ -83,7 +83,7 @@ export function TrackingProgressBar({ currentStep, className, isRejected = false
             </div>
 
             {index < steps.length - 1 && (
-              <div className="flex-1 flex items-center px-2 -translate-y-1">
+              <div className="flex-1 flex items-center px-1 -translate-y-1">
                 <div className="relative w-full h-4">
                   {/* Base dashed connector */}
                   <div className="absolute inset-0 flex items-center pointer-events-none">
