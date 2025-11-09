@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { TrackingProgressBar, getStepFromStatus } from "@/components/TrackingProgressBar";
+import { TrackingProgressBar } from "@/components/TrackingProgressBar";
 import { useTracking } from "@/hooks/useTracking";
 import { format } from "date-fns";
 
@@ -64,7 +64,6 @@ export default function Tracking() {
               <TableBody>
                 {trackingData && trackingData.length > 0 ? (
                   trackingData.map((item) => {
-                    const currentStep = getStepFromStatus(item.status);
                     return (
                       <TableRow key={item.id}>
                         <TableCell className="font-medium text-sm">
@@ -86,7 +85,7 @@ export default function Tracking() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <TrackingProgressBar currentStep={currentStep} />
+                          <TrackingProgressBar currentStep={item.currentStep} isRejected={item.isRejected} />
                         </TableCell>
                       </TableRow>
                     );
