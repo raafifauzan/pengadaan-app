@@ -380,22 +380,22 @@ export default function Pengajuan() {
                 <TableRow>
                   <TableHead className="w-[120px] px-6">
                     <button onClick={() => handleSort("tgl_surat")} className="flex items-center gap-1 hover:text-foreground">
-                      Tanggal <ChevronsUpDown className="h-3 w-3" />
+                      Tanggal <ChevronsUpDown className="h-2.5 w-2.5 text-muted-foreground/80" />
                     </button>
                   </TableHead>
                   <TableHead className="w-[250px] px-4">
                     <button onClick={() => handleSort("judul")} className="flex items-center gap-1 hover:text-foreground">
-                      Paket Pengajuan <ChevronsUpDown className="h-3 w-3" />
+                      Paket Pengajuan <ChevronsUpDown className="h-2.5 w-2.5 text-muted-foreground/80" />
                     </button>
                   </TableHead>
                   <TableHead className="w-[140px] px-4">
                     <button onClick={() => handleSort("nilai_pengajuan")} className="flex items-center gap-1 hover:text-foreground">
-                      Nilai Project <ChevronsUpDown className="h-3 w-3" />
+                      Nilai Project <ChevronsUpDown className="h-2.5 w-2.5 text-muted-foreground/80" />
                     </button>
                   </TableHead>
                   <TableHead className="w-[140px] px-4">
                     <button onClick={() => handleSort("jenis")} className="flex items-center gap-1 hover:text-foreground">
-                      Jenis Project <ChevronsUpDown className="h-3 w-3" />
+                      Jenis Project <ChevronsUpDown className="h-2.5 w-2.5 text-muted-foreground/80" />
                     </button>
                   </TableHead>
                   <TableHead className="w-[160px] px-4 text-center">Status &amp; Aksi</TableHead>

@@ -44,6 +44,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { StatusBadge } from "@/components/StatusBadge";
+import { cn } from "@/lib/utils";
 import type { Tables } from "@/integrations/supabase/types";
 
 type FormEvaluasiRecord = Tables<"form_evaluasi"> & {
@@ -571,17 +572,35 @@ export default function FormEvaluasi({ defaultTab = "kelengkapan" }: { defaultTa
                   <TableRow>
                     <TableHead className="w-[120px] px-6">
                       <button onClick={() => handleSort("created_at")} className="flex items-center gap-1 hover:text-foreground">
-                        Tanggal Pengajuan <ChevronsUpDown className="h-3 w-3" />
+                        Tanggal Pengajuan
+                        <ChevronsUpDown
+                          className={cn(
+                            "h-2.5 w-2.5 text-muted-foreground transition-opacity",
+                            sortConfig?.key === "created_at" ? "opacity-100" : "opacity-60"
+                          )}
+                        />
                       </button>
                     </TableHead>
                     <TableHead className="w-[320px] px-4">
                       <button onClick={() => handleSort("judul")} className="flex items-center gap-1 hover:text-foreground">
-                        Paket Pengajuan <ChevronsUpDown className="h-3 w-3" />
+                        Paket Pengajuan
+                        <ChevronsUpDown
+                          className={cn(
+                            "h-2.5 w-2.5 text-muted-foreground transition-opacity",
+                            sortConfig?.key === "judul" ? "opacity-100" : "opacity-60"
+                          )}
+                        />
                       </button>
                     </TableHead>
                     <TableHead className="w-[140px] px-4">
                       <button onClick={() => handleSort("nilai_pengajuan")} className="flex items-center gap-1 hover:text-foreground">
-                        Nilai Project <ChevronsUpDown className="h-3 w-3" />
+                        Nilai Project
+                        <ChevronsUpDown
+                          className={cn(
+                            "h-2.5 w-2.5 text-muted-foreground transition-opacity",
+                            sortConfig?.key === "nilai_pengajuan" ? "opacity-100" : "opacity-60"
+                          )}
+                        />
                       </button>
                     </TableHead>
                     <TableHead className="w-[140px] px-4">Jenis Project</TableHead>
@@ -766,12 +785,24 @@ export default function FormEvaluasi({ defaultTab = "kelengkapan" }: { defaultTa
                   <TableRow>
                     <TableHead className="w-[120px] px-6">
                       <button onClick={() => handleSortProgres("kode_form")} className="flex items-center gap-1 hover:text-foreground">
-                        No Form Evaluasi <ChevronsUpDown className="h-3 w-3" />
+                        No Form Evaluasi
+                        <ChevronsUpDown
+                          className={cn(
+                            "h-2.5 w-2.5 text-muted-foreground transition-opacity",
+                            sortConfigProgres?.key === "kode_form" ? "opacity-100" : "opacity-60"
+                          )}
+                        />
                       </button>
                     </TableHead>
                     <TableHead className="w-[320px] px-4">
                       <button onClick={() => handleSortProgres("judul")} className="flex items-center gap-1 hover:text-foreground">
-                        Judul <ChevronsUpDown className="h-3 w-3" />
+                        Judul
+                        <ChevronsUpDown
+                          className={cn(
+                            "h-2.5 w-2.5 text-muted-foreground transition-opacity",
+                            sortConfigProgres?.key === "judul" ? "opacity-100" : "opacity-60"
+                          )}
+                        />
                       </button>
                     </TableHead>
                     {approvalFlow.map((flow) => (

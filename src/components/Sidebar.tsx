@@ -39,7 +39,7 @@ const menuItems: MenuItem[] = [
   },
   {
     icon: Wallet,
-    label: "User Konfirmasi Pembayaran",
+    label: "Pembayaran",
     path: "/konfirmasi-pembayaran",
   },
 ];

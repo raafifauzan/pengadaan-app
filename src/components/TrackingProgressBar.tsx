@@ -1,4 +1,4 @@
-import { CheckCircle2, Circle, Clock } from "lucide-react";
+import { CheckCircle2, Circle, Clock, CircleX } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
 
@@ -37,19 +37,30 @@ const stepOrder: TrackingStep[] = [
 ];
 
 export function TrackingProgressBar({ currentStep, className, isRejected = false }: TrackingProgressBarProps) {
-  const currentIndex = stepOrder.indexOf(currentStep);
-  
+  const currentIndex = Math.max(0, stepOrder.indexOf(currentStep));
+
   return (
-    <div className={cn("flex items-center w-full gap-3 py-3", className)}>
+    <div className={cn("inline-flex items-center gap-2 py-4", className)}>
       {steps.map((step, index) => {
         const stepIndex = stepOrder.indexOf(step.key);
-        const isCompleted = stepIndex < currentIndex;
+        const isCanceledStep = isRejected && stepIndex === currentIndex;
+        const isCompleted = stepIndex < currentIndex && !isCanceledStep;
         const isCurrent = stepIndex === currentIndex;
         const isPending = stepIndex > currentIndex;
+        const connectorState =
+          stepIndex < currentIndex
+            ? "full"
+            : stepIndex === currentIndex
+            ? "half"
+            : "none";
+
+        if (isRejected && stepIndex > currentIndex) {
+          return null;
+        }
 
         return (
-          <div key={step.key} className="flex items-center flex-1 min-w-[72px]">
-            <div className="flex flex-col items-center text-center min-w-[64px] gap-2">
+          <div key={step.key} className="flex items-center w-[88px]">
+            <div className="flex flex-col items-center flex-none w-[72px] relative z-10">
               <div
                 className={cn(
                   "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-500 ease-in-out shadow-sm",
@@ -60,7 +71,9 @@ export function TrackingProgressBar({ currentStep, className, isRejected = false
                   isPending && "bg-muted text-muted-foreground"
                 )}
               >
-                {isCompleted ? (
+                {isCanceledStep ? (
+                  <CircleX className="w-5 h-5" />
+                ) : isCompleted ? (
                   <CheckCircle2 className="w-5 h-5" />
                 ) : isCurrent ? (
                   <Clock className="w-5 h-5" />
@@ -68,9 +81,10 @@ export function TrackingProgressBar({ currentStep, className, isRejected = false
                   <Circle className="w-4 h-4" />
                 )}
               </div>
+
               <p
                 className={cn(
-                  "text-[10px] leading-tight text-center transition-all duration-300 whitespace-nowrap font-normal mt-1.5 pb-2",
+                  "text-[10px] leading-tight text-center transition-all duration-300 whitespace-nowrap font-normal mt-2",
                   isCompleted && !isRejected && "text-primary",
                   isCompleted && isRejected && "text-destructive",
                   isCurrent && !isRejected && "text-primary",
@@ -82,34 +96,16 @@ export function TrackingProgressBar({ currentStep, className, isRejected = false
               </p>
             </div>
 
-            {index < steps.length - 1 && (
-              <div className="flex-1 flex items-center px-1 -translate-y-5">
-                <div className="relative w-full h-1">
-                  {/* Base line - gray for pending or remaining half */}
-                  <div className="absolute inset-0 flex items-center">
-                    <div className={cn(
-                      "w-full h-1 rounded-full transition-all duration-500",
-                      stepIndex > currentIndex 
-                        ? "bg-muted-foreground/30" 
-                        : stepIndex === currentIndex
-                        ? "bg-muted-foreground/30"
-                        : "bg-transparent"
-                    )} />
-                  </div>
-
-                  {/* Progress fill */}
+            {index < steps.length - 1 && !isCanceledStep && (
+              <div className="flex-1 flex items-center -mt-4 ml-[-20px] mr-[-27px] px-2">
+                <div className="relative w-full h-[3px] rounded-full bg-muted-foreground/25">
                   <div
                     className={cn(
-                      "absolute left-0 top-0 h-1 rounded-full transition-all duration-500 ease-in-out",
-                      stepIndex < currentIndex
-                        ? isRejected
-                          ? "bg-destructive w-full shadow-sm"
-                          : "bg-primary w-full shadow-sm"
-                        : stepIndex === currentIndex
-                        ? isRejected
-                          ? "bg-destructive w-1/2 shadow-sm"
-                          : "bg-primary w-1/2 shadow-sm"
-                        : "w-0"
+                      "absolute left-0 top-0 h-full rounded-full transition-all duration-500 ease-in-out",
+                      isRejected ? "bg-destructive" : "bg-primary",
+                      connectorState === "full" && "w-full",
+                      connectorState === "half" && "w-1/2",
+                      connectorState === "none" && "w-0"
                     )}
                   />
                 </div>
@@ -121,4 +117,3 @@ export function TrackingProgressBar({ currentStep, className, isRejected = false
     </div>
   );
 }
-

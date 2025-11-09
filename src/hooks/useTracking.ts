@@ -15,6 +15,7 @@ export interface TrackingItem {
   nilaiPengajuan: number;
   unit: string | null;
   noSurat: string | null;
+  lampiranUrl: string | null;
   currentStep: TrackingStep;
   isRejected: boolean;
 }
@@ -131,6 +132,7 @@ export function useTracking() {
           nilaiPengajuan: p.nilai_pengajuan || 0,
           unit: p.unit,
           noSurat: p.no_surat,
+          lampiranUrl: (p as any).lampiran_url ?? null,
           currentStep: step,
           isRejected: rejected,
         };
