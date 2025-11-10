@@ -4,7 +4,8 @@ import type { Tables } from "@/integrations/supabase/types";
 import type { TrackingStep } from "@/components/TrackingProgressBar";
 
 type Pengajuan = Tables<"pengajuan">;
-type FormEvaluasiRow = Tables<"form_evaluasi">;
+type FormApprovalRow = Tables<"form_approval">;
+type FormEvaluasiRow = Tables<"form_evaluasi"> & { approval: FormApprovalRow | null };
 type PengadaanRow = Tables<"Pengadaan">;
 
 export interface TrackingItem {
@@ -70,13 +71,28 @@ const mapPengajuanStatusToStep = (status?: string | null): { step: TrackingStep;
   return { step: statusMap[statusLower] || "pengajuan", rejected: false };
 };
 
+const approvalStageColumns: Array<keyof FormApprovalRow> = [
+  "sekper_date",
+  "sevp_operation_date",
+  "keuangan_date",
+  "sevp_support_date",
+  "direktur_date",
+];
+
 const determineCurrentStep = (
   pengajuan: Pengajuan,
   evaluasi?: FormEvaluasiRow,
+  approval?: FormApprovalRow | null,
   pengadaan?: PengadaanRow
 ): { step: TrackingStep; rejected: boolean } => {
   if (pengadaan) {
     return { step: mapPengadaanStatusToStep(pengadaan["STATUS"]), rejected: false };
+  }
+  if (approval) {
+    const allApprovalComplete = approvalStageColumns.every((column) => Boolean(approval[column]));
+    if (!allApprovalComplete) {
+      return { step: "approval", rejected: false };
+    }
   }
   if (evaluasi) {
     return { step: evaluasi.is_final ? "kelengkapan_evaluasi" : "form_evaluasi", rejected: false };
@@ -91,7 +107,7 @@ export function useTracking() {
     queryFn: async (): Promise<TrackingItem[]> => {
       const [pengajuanRes, evaluasiRes, pengadaanRes] = await Promise.all([
         supabase.from("pengajuan").select("*").order("timestamp", { ascending: false }),
-        supabase.from("form_evaluasi").select("*"),
+        supabase.from("form_evaluasi").select("*, approval:form_approval(*)"),
         supabase.from("Pengadaan").select("*"),
       ]);
 
@@ -122,7 +138,12 @@ export function useTracking() {
           pengadaanMap.get(p.id) ||
           (p.no_surat ? pengadaanMap.get(p.no_surat) : undefined);
 
-        const { step, rejected } = determineCurrentStep(p, evaluasiRecord, pengadaanRecord);
+        const { step, rejected } = determineCurrentStep(
+          p,
+          evaluasiRecord,
+          evaluasiRecord?.approval ?? null,
+          pengadaanRecord
+        );
 
         return {
           id: p.id,

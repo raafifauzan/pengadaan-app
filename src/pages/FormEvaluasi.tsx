@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, type ComponentProps } from "react";
 import { Button } from "@/components/ui/button";
 import { Printer, FileText, Upload, ChevronsUpDown, PenLine, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useFormEvaluasi, useUpdateFormEvaluasi } from "@/hooks/useFormEvaluasi";
+import { useFormEvaluasi, useUpdateFormEvaluasi, useUpsertFormApproval } from "@/hooks/useFormEvaluasi";
 import PrintEvaluasi from "@/components/PrintEvaluasi";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -46,9 +46,12 @@ import { Label } from "@/components/ui/label";
 import { StatusBadge } from "@/components/StatusBadge";
 import { cn } from "@/lib/utils";
 import type { Tables } from "@/integrations/supabase/types";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ApprovalDatePicker } from "@/components/approval/ApprovalDatePicker";
 
 type FormEvaluasiRecord = Tables<"form_evaluasi"> & {
   pengajuan: Tables<"pengajuan"> | null;
+  approval: Tables<"form_approval"> | null;
 };
 
 type PrintEvaluasiRow = ComponentProps<typeof PrintEvaluasi>["row"];
@@ -90,13 +93,7 @@ interface ProgresDocument {
   status: "proses" | "selesai" | "revisi";
 }
 
-type ProgresRecord = FormEvaluasiRecord & {
-  approval1?: ApprovalStatus;
-  approval2?: ApprovalStatus;
-  approval3?: ApprovalStatus;
-  approval4?: ApprovalStatus;
-  approval5?: ApprovalStatus;
-};
+type ProgresRecord = FormEvaluasiRecord;
 
 const mockEvaluations: EvaluationRequest[] = [
   {
@@ -206,6 +203,7 @@ export default function FormEvaluasi({ defaultTab = "kelengkapan" }: { defaultTa
   const { toast } = useToast();
   const { data: formEvaluasiData, isLoading } = useFormEvaluasi();
   const updateFormEvaluasi = useUpdateFormEvaluasi();
+  const upsertApproval = useUpsertFormApproval();
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -237,111 +235,180 @@ export default function FormEvaluasi({ defaultTab = "kelengkapan" }: { defaultTa
     setTabValue(defaultTab);
   }, [defaultTab]);
   const approvalFlow = [
-    { key: "sekper", label: "Sekretaris Perusahaan", statusKey: "approval1" as const },
-    { key: "sevpOperation", label: "SEVP Operation", statusKey: "approval2" as const },
-    { key: "finance", label: "Divisi Keuangan", statusKey: "approval3" as const },
-    { key: "sevpSupport", label: "SEVP Business Support", statusKey: "approval4" as const },
-    { key: "director", label: "Direktur Utama", statusKey: "approval5" as const },
+    { key: "sekper", label: "Sekretaris Perusahaan", column: "sekper_date" as const },
+    { key: "sevpOperation", label: "SEVP Operation", column: "sevp_operation_date" as const },
+    { key: "finance", label: "Divisi Keuangan", column: "keuangan_date" as const },
+    { key: "sevpSupport", label: "SEVP Business Support", column: "sevp_support_date" as const },
+    { key: "director", label: "Direktur Utama", column: "direktur_date" as const },
   ];
-  type ApprovalFlowKey = (typeof approvalFlow)[number]["key"];
+  type ApprovalColumn = (typeof approvalFlow)[number]["column"];
   const [approvalDates, setApprovalDates] = useState<
-    Record<string, Partial<Record<ApprovalFlowKey, string>>>
+    Record<string, Partial<Record<ApprovalColumn, string>>>
   >({});
   const [editingApproval, setEditingApproval] = useState<
-    Record<string, Partial<Record<ApprovalFlowKey, boolean>>>
+    Record<string, Partial<Record<ApprovalColumn, boolean>>>
   >({});
 
-  const handleApprovalDateChange = (formId: string, key: ApprovalFlowKey, value: string) => {
+  const todayIsoDate = new Date().toISOString().slice(0, 10);
+  const todayDate = new Date(todayIsoDate);
+
+  const clampToToday = (value: string) => {
+    if (!value) return "";
+    return value > todayIsoDate ? todayIsoDate : value;
+  };
+
+  const handleApprovalDateChange = (formId: string, column: ApprovalColumn, value: string) => {
+    const clamped = clampToToday(value);
     setApprovalDates((prev) => ({
       ...prev,
       [formId]: {
         ...(prev[formId] ?? {}),
-        [key]: value,
+        [column]: clamped,
       },
     }));
+  };
+
+  const formatDateInput = (value?: string | null) => {
+    if (!value) return "";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+    return date.toISOString().slice(0, 10);
+  };
+
+  const getApprovalValue = (record: ProgresRecord, column: ApprovalColumn) => {
+    return record.approval?.[column] ?? null;
   };
 
   const isStepCompleted = (record: ProgresRecord, flowIndex: number) => {
     const flowItem = approvalFlow[flowIndex];
     if (!flowItem) return false;
-    const dateValue = approvalDates[record.id]?.[flowItem.key];
-    if (dateValue) return true;
-    const statusValue = record[flowItem.statusKey];
-    return statusValue === "approved";
+    const savedValue = getApprovalValue(record, flowItem.column);
+    return Boolean(savedValue);
   };
 
   const isStepUnlocked = (record: ProgresRecord, flowIndex: number) => {
     if (flowIndex === 0) return true;
-    return isStepCompleted(record, flowIndex - 1);
+    const previousColumn = approvalFlow[flowIndex - 1]?.column;
+    if (!previousColumn) return true;
+    return Boolean(getApprovalValue(record, previousColumn));
   };
 
-  const formatApprovalDate = (value: string) => {
-    if (!value) return "";
-    return new Date(value).toLocaleDateString("id-ID", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
+  const startEditingApproval = (formId: string, column: ApprovalColumn, initialValue: string) => {
+    setEditingApproval((prev) => ({
+      ...prev,
+      [formId]: {
+        ...(prev[formId] ?? {}),
+        [column]: true,
+      },
+    }));
+    setApprovalDates((prev) => ({
+      ...prev,
+      [formId]: {
+        ...(prev[formId] ?? {}),
+        [column]: initialValue,
+      },
+    }));
+  };
+
+  const closeApprovalEditor = (formId: string, column: ApprovalColumn) => {
+    setEditingApproval((prev) => ({
+      ...prev,
+      [formId]: {
+        ...(prev[formId] ?? {}),
+        [column]: false,
+      },
+    }));
+
+    setApprovalDates((prev) => {
+      const currentRecord = { ...(prev[formId] ?? {}) };
+      delete currentRecord[column];
+      if (Object.keys(currentRecord).length === 0) {
+        const { [formId]: _, ...rest } = prev;
+        return rest;
+      }
+      return { ...prev, [formId]: currentRecord };
     });
   };
 
-  const startEditingApproval = (formId: string, key: ApprovalFlowKey) => {
-    setEditingApproval((prev) => ({
-      ...prev,
-      [formId]: {
-        ...(prev[formId] ?? {}),
-        [key]: true,
-      },
-    }));
-  };
+  const saveApprovalDate = async (formId: string, column: ApprovalColumn, value: string | null) => {
+    if (!value) return;
+    const isoValue = new Date(`${value}T00:00:00Z`).toISOString();
+    const label = approvalFlow.find((flow) => flow.column === column)?.label ?? "Approval";
 
-  const stopEditingApproval = (formId: string, key: ApprovalFlowKey) => {
-    setEditingApproval((prev) => ({
-      ...prev,
-      [formId]: {
-        ...(prev[formId] ?? {}),
-        [key]: false,
-      },
-    }));
+    try {
+      await upsertApproval.mutateAsync({
+        formEvaluasiId: formId,
+        updates: { [column]: isoValue },
+      });
+      toast({
+        title: "Approval diperbarui",
+        description: `${label} berhasil diperbarui.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Gagal menyimpan approval",
+        description: error instanceof Error ? error.message : "Terjadi kesalahan saat menyimpan tanggal approval.",
+        variant: "destructive",
+      });
+      return;
+    } finally {
+      closeApprovalEditor(formId, column);
+    }
   };
 
   const renderApprovalCell = (record: ProgresRecord, flowItem: (typeof approvalFlow)[number], index: number) => {
-    const datesForRecord = approvalDates[record.id] ?? {};
-    const currentValue = datesForRecord[flowItem.key] ?? "";
+    const column = flowItem.column;
+    const savedValueRaw = getApprovalValue(record, column);
+    const savedValue = formatDateInput(savedValueRaw);
+    const draftValue = approvalDates[record.id]?.[column];
+    const currentValue = draftValue ?? savedValue;
     const unlocked = isStepUnlocked(record, index);
-    const isCompleted = Boolean(currentValue) || record[flowItem.statusKey] === "approved";
-    const isEditing = Boolean(editingApproval[record.id]?.[flowItem.key]);
-    const circleBase = "h-7 w-7 rounded-full flex items-center justify-center";
+    const isCompleted = Boolean(savedValueRaw);
+    const isEditing = Boolean(editingApproval[record.id]?.[column]);
+    const circleBase = "h-6 w-6 rounded-full flex items-center justify-center text-[10px]";
+    const canEdit = unlocked || isCompleted;
 
     return (
       <div className="flex items-center justify-center min-h-[48px]">
-        {isCompleted ? (
-          <div className={`${circleBase} border border-emerald-400 bg-emerald-50 text-emerald-600`}>
-            <Check className="h-3.5 w-3.5" />
-          </div>
-        ) : isEditing ? (
-          <Input
-            type="date"
-            autoFocus
-            value={currentValue}
-            onChange={(event) => handleApprovalDateChange(record.id, flowItem.key, event.target.value)}
-            onBlur={() => stopEditingApproval(record.id, flowItem.key)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" || event.key === "Escape") {
-                event.currentTarget.blur();
-              }
-            }}
-            className="h-8 text-xs"
-          />
-        ) : unlocked ? (
-          <button
-            onClick={() => startEditingApproval(record.id, flowItem.key)}
-            className={`${circleBase} border border-primary/30 bg-primary/5 text-primary hover:bg-primary/10`}
-          >
-            <PenLine className="h-3.5 w-3.5" />
-          </button>
-        ) : (
-          <div className={`${circleBase} border border-muted-foreground/40 bg-transparent`} />
-        )}
+        <Popover
+          open={isEditing}
+          onOpenChange={(open) => {
+            if (open) {
+              if (!canEdit) return;
+              startEditingApproval(record.id, column, savedValue);
+            } else {
+              closeApprovalEditor(record.id, column);
+            }
+          }}
+        >
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              disabled={!canEdit}
+              className={cn(
+                circleBase,
+                canEdit
+                  ? "border border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 disabled:opacity-50"
+                  : "border border-muted-foreground/30 bg-transparent text-muted-foreground",
+                isCompleted && "border-emerald-400 bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+              )}
+            >
+              {isCompleted ? <Check className="h-3 w-3" /> : <PenLine className="h-3 w-3" />}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent align="center" className="p-0 border-none shadow-none bg-transparent">
+            <div className="fixed inset-0 bg-black/30 backdrop-blur-[2px] pointer-events-none" aria-hidden="true" />
+            <div className="relative z-10">
+              <ApprovalDatePicker
+                value={currentValue ?? ""}
+                maxDate={todayDate}
+                onChange={(val) => handleApprovalDateChange(record.id, column, val)}
+                onSave={() => saveApprovalDate(record.id, column, currentValue ?? null)}
+                onCancel={() => closeApprovalEditor(record.id, column)}
+              />
+            </div>
+          </PopoverContent>
+        </Popover>
       </div>
     );
   };

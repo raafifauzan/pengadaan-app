@@ -96,6 +96,41 @@ export type Database = {
           },
         ]
       }
+      form_approval: {
+        Row: {
+          direktur_date: string | null
+          form_evaluasi_id: string
+          keuangan_date: string | null
+          sekper_date: string | null
+          sevp_operation_date: string | null
+          sevp_support_date: string | null
+        }
+        Insert: {
+          direktur_date?: string | null
+          form_evaluasi_id: string
+          keuangan_date?: string | null
+          sekper_date?: string | null
+          sevp_operation_date?: string | null
+          sevp_support_date?: string | null
+        }
+        Update: {
+          direktur_date?: string | null
+          form_evaluasi_id?: string
+          keuangan_date?: string | null
+          sekper_date?: string | null
+          sevp_operation_date?: string | null
+          sevp_support_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form_approval_form_evaluasi_id_fkey"
+            columns: ["form_evaluasi_id"]
+            isOneToOne: true
+            referencedRelation: "form_evaluasi"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       LACC: {
         Row: {
           faktur_pajak: string | null
