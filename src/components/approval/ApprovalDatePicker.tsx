@@ -114,9 +114,9 @@ export function ApprovalDatePicker({
                     disabled={disabled}
                     className={[
                       "mx-auto h-8 w-8 rounded-lg flex items-center justify-center text-[13px] border border-transparent",
-                      outsideMonth ? "text-muted-foreground/60 font-normal opacity-80" : "text-foreground font-medium",
+                      outsideMonth ? "text-muted-foreground/60 font-normal opacity-80" : "text-foreground font-normal",
                       disabled ? "text-muted-foreground/30 opacity-40 cursor-not-allowed" : "",
-                      isSelected ? "bg-primary text-primary-foreground font-semibold shadow border-transparent" : "",
+                    isSelected ? "bg-primary text-primary-foreground shadow border-transparent" : "",
                       "focus:outline-none focus-visible:outline-none focus:ring-0"
                     ].join(" ")}
                   >
