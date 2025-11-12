@@ -4,10 +4,7 @@ import { Plus, Check, X, FileText, ChevronsUpDown } from "lucide-react";
 import { RequestForm } from "@/components/RequestForm";
 import { useToast } from "@/hooks/use-toast";
 import { usePengajuan, useUpdatePengajuan } from "@/hooks/usePengajuan";
-import {
-  useCreateFormEvaluasi,
-  useFormEvaluasi,
-} from "@/hooks/useFormEvaluasi";
+import { useCreateFormEvaluasi, useFormEvaluasi } from "@/hooks/useFormEvaluasi";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
@@ -31,19 +28,8 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProcurementFilterBar } from "@/components/ProcurementFilterBar";
-import {
-  TABLE_COLUMNS,
-  TABLE_LAYOUT,
-  TableColumnKey,
-  getColumnFlexStyles,
-} from "@/config/table";
 
-type ProcurementStatus =
-  | "pending"
-  | "approved"
-  | "rejected"
-  | "in_progress"
-  | "completed";
+type ProcurementStatus = "pending" | "approved" | "rejected" | "in_progress" | "completed";
 
 interface ProcurementRequest {
   id: string;
@@ -58,6 +44,164 @@ interface ProcurementRequest {
   lampiran?: string;
 }
 
+const mockRequests: ProcurementRequest[] = [
+  {
+    id: "REQ-001",
+    noSurat: "116/MEMO/TRS/IX/2025",
+    title: "Pengadaan Laptop",
+    department: "IT",
+    requestor: "john.doe@company.com",
+    jenisPengajuan: "Barang",
+    amount: 50000000,
+    date: "2024-01-15",
+    status: "pending",
+    lampiran: "surat_pengajuan_001.pdf",
+  },
+  {
+    id: "REQ-002",
+    noSurat: "117/MEMO/GA/IX/2025",
+    title: "Alat Tulis Kantor",
+    department: "GA",
+    requestor: "jane.smith@company.com",
+    jenisPengajuan: "Barang",
+    amount: 5000000,
+    date: "2024-01-14",
+    status: "approved",
+    lampiran: "surat_pengajuan_002.pdf",
+  },
+  {
+    id: "REQ-003",
+    noSurat: "118/MEMO/MKT/IX/2025",
+    title: "Peralatan Meeting",
+    department: "Marketing",
+    requestor: "bob.wilson@company.com",
+    jenisPengajuan: "Barang",
+    amount: 15000000,
+    date: "2024-01-13",
+    status: "rejected",
+    lampiran: "surat_pengajuan_003.pdf",
+  },
+  {
+    id: "REQ-004",
+    noSurat: "119/MEMO/IT/IX/2025",
+    title: "Software License",
+    department: "IT",
+    requestor: "alice.brown@company.com",
+    jenisPengajuan: "Jasa",
+    amount: 25000000,
+    date: "2024-01-12",
+    status: "pending",
+    lampiran: "surat_pengajuan_004.pdf",
+  },
+  {
+    id: "REQ-005",
+    noSurat: "120/MEMO/FIN/IX/2025",
+    title: "Audit Services",
+    department: "Finance",
+    requestor: "charlie.davis@company.com",
+    jenisPengajuan: "Jasa",
+    amount: 35000000,
+    date: "2024-01-11",
+    status: "in_progress",
+    lampiran: "surat_pengajuan_005.pdf",
+  },
+];
+
+type TableColumnKey = "date" | "title" | "value" | "jenis" | "unit" | "status";
+
+interface TableColumnConfig {
+  key: TableColumnKey;
+  label: string;
+  basis: number;
+  minWidth?: number;
+  shrink?: number;
+  align: string;
+  justify: string;
+  headPadding: string;
+  cellPadding: string;
+  sortable?: boolean;
+  sortKey?: string;
+}
+
+const TABLE_COLUMNS: TableColumnConfig[] = [
+  {
+    key: "date",
+    label: "Tanggal",
+    basis: 150,
+    minWidth: 120,
+    align: "text-left",
+    justify: "justify-start",
+    headPadding: "pl-5 pr-1.5",
+    cellPadding: "pl-5 pr-1.5",
+    sortable: true,
+    sortKey: "tgl_surat",
+  },
+  {
+    key: "title",
+    label: "Paket Pengajuan",
+    basis: 350,
+    minWidth: 300,
+    align: "text-left",
+    justify: "justify-start",
+    headPadding: "px-1.5",
+    cellPadding: "px-1.5",
+    sortable: true,
+    sortKey: "judul",
+  },
+  {
+    key: "value",
+    label: "Nilai Project",
+    basis: 180,
+    align: "text-right",
+    justify: "justify-end",
+    headPadding: "px-0",
+    cellPadding: "px-2.5",
+    sortable: true,
+    sortKey: "nilai_pengajuan",
+  },
+  {
+    key: "jenis",
+    label: "Jenis Project",
+    basis: 170,
+    minWidth: 150,
+    align: "text-center",
+    justify: "justify-center",
+    headPadding: "px-1.5",
+    cellPadding: "px-1.5",
+    sortable: true,
+    sortKey: "jenis",
+  },
+  {
+    key: "unit",
+    label: "Bagian / Unit",
+    basis: 150,
+    minWidth: 140,
+    align: "text-center",
+    justify: "justify-center",
+    headPadding: "px-1.5",
+    cellPadding: "px-1.5",
+    sortable: true,
+    sortKey: "unit",
+  },
+  {
+    key: "status",
+    label: "Status & Aksi",
+    basis: 140,
+    minWidth: 140,
+    align: "text-center",
+    justify: "justify-center",
+    headPadding: "px-1.5",
+    cellPadding: "px-1.5",
+  },
+];
+
+const getColumnFlexStyles = (column: TableColumnConfig) => ({
+  flexBasis: `${column.basis}px`,
+  flexGrow: 0,
+  flexShrink: column.shrink ?? 0,
+  minWidth: column.minWidth ? `${column.minWidth}px` : undefined,
+});
+
 export default function Pengajuan() {
   const { toast } = useToast();
   const { data: pengajuanData, isLoading } = usePengajuan();
@@ -68,10 +212,7 @@ export default function Pengajuan() {
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterJenis, setFilterJenis] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [nilaiFilter, setNilaiFilter] = useState<[number, number]>([
-    0,
-    Number.MAX_SAFE_INTEGER,
-  ]);
+  const [nilaiFilter, setNilaiFilter] = useState<[number, number]>([0, Number.MAX_SAFE_INTEGER]);
   const [currentPage, setCurrentPage] = useState(1);
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
@@ -100,20 +241,18 @@ export default function Pengajuan() {
 
   const generateKodeForm = () => {
     const now = new Date();
-    const month = now.toLocaleString("id-ID", { month: "short" }).toUpperCase();
+    const month = now.toLocaleString('id-ID', { month: 'short' }).toUpperCase();
     const year = now.getFullYear();
-
+    
     // Get the highest number from existing forms
-    const existingNumbers =
-      formEvaluasiData?.map((form) => {
-        const match = form.kode_form.match(/^(\d+)\//);
-        return match ? parseInt(match[1]) : 0;
-      }) || [];
-
-    const nextNumber =
-      existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1;
-    const paddedNumber = String(nextNumber).padStart(4, "0");
-
+    const existingNumbers = formEvaluasiData?.map(form => {
+      const match = form.kode_form.match(/^(\d+)\//);
+      return match ? parseInt(match[1]) : 0;
+    }) || [];
+    
+    const nextNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1;
+    const paddedNumber = String(nextNumber).padStart(4, '0');
+    
     return `${paddedNumber}/FORM-EV/PENG/${month}/${year}`;
   };
 
@@ -191,11 +330,7 @@ export default function Pengajuan() {
 
   const handleSort = (key: string) => {
     let direction: "asc" | "desc" = "asc";
-    if (
-      sortConfig &&
-      sortConfig.key === key &&
-      sortConfig.direction === "asc"
-    ) {
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === "asc") {
       direction = "desc";
     }
     setSortConfig({ key, direction });
@@ -209,29 +344,23 @@ export default function Pengajuan() {
     }).format(amount);
   };
 
-  const normalizeStatus = (
-    status: string | null | undefined,
-  ): ProcurementStatus => {
+  const normalizeStatus = (status: string | null | undefined): ProcurementStatus => {
     if (!status) return "pending";
     const normalized = status.toLowerCase();
 
     if (["approved", "disetujui"].includes(normalized)) return "approved";
     if (["pending", "menunggu"].includes(normalized)) return "pending";
     if (["rejected", "ditolak"].includes(normalized)) return "rejected";
-    if (["in_progress", "dalam_proses"].includes(normalized))
-      return "in_progress";
+    if (["in_progress", "dalam_proses"].includes(normalized)) return "in_progress";
     if (["completed", "selesai"].includes(normalized)) return "completed";
 
     return "pending";
   };
 
   const nilaiRange = useMemo(() => {
-    const source =
-      pengajuanData && pengajuanData.length > 0 ? pengajuanData : mockRequests;
+    const source = pengajuanData && pengajuanData.length > 0 ? pengajuanData : mockRequests;
     if (!source.length) return { min: 0, max: 0 };
-    const values = source.map(
-      (item) => item.nilai_pengajuan ?? item.amount ?? 0,
-    );
+    const values = source.map((item) => item.nilai_pengajuan ?? item.amount ?? 0);
     const min = Math.min(...values);
     const max = Math.max(...values);
     return { min, max: min === max ? min + 1 : max };
@@ -256,19 +385,16 @@ export default function Pengajuan() {
     const isNilaiFilterActive = nilaiFilter[1] !== Number.MAX_SAFE_INTEGER;
 
     let filtered = pengajuanData.filter((req) => {
-      const matchesStatus =
-        filterStatus === "all" || req.status === filterStatus;
+      const matchesStatus = filterStatus === "all" || req.status === filterStatus;
       const matchesJenis =
         filterJenis === "all" ||
         (req.jenis?.toLowerCase() ?? "") === filterJenis.toLowerCase();
       const matchesSearch =
-        (req.no_surat?.toLowerCase().includes(searchQuery.toLowerCase()) ??
-          false) ||
+        (req.no_surat?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false) ||
         (req.judul?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false);
       const nilai = req.nilai_pengajuan ?? 0;
       const matchesNilai =
-        !isNilaiFilterActive ||
-        (nilai >= nilaiFilter[0] && nilai <= nilaiFilter[1]);
+        !isNilaiFilterActive || (nilai >= nilaiFilter[0] && nilai <= nilaiFilter[1]);
       return matchesStatus && matchesJenis && matchesSearch && matchesNilai;
     });
 
@@ -281,14 +407,12 @@ export default function Pengajuan() {
         if (bValue == null) return -1;
 
         if (typeof aValue === "number" && typeof bValue === "number") {
-          return sortConfig.direction === "asc"
-            ? aValue - bValue
-            : bValue - aValue;
+          return sortConfig.direction === "asc" ? aValue - bValue : bValue - aValue;
         }
 
         const aStr = String(aValue).toLowerCase();
         const bStr = String(bValue).toLowerCase();
-
+        
         if (aStr < bStr) return sortConfig.direction === "asc" ? -1 : 1;
         if (aStr > bStr) return sortConfig.direction === "asc" ? 1 : -1;
         return 0;
@@ -296,19 +420,12 @@ export default function Pengajuan() {
     }
 
     return filtered;
-  }, [
-    pengajuanData,
-    filterJenis,
-    filterStatus,
-    nilaiFilter,
-    searchQuery,
-    sortConfig,
-  ]);
+  }, [pengajuanData, filterJenis, filterStatus, nilaiFilter, searchQuery, sortConfig]);
 
   const totalPages = Math.ceil(sortedAndFilteredRequests.length / itemsPerPage);
   const paginatedRequests = sortedAndFilteredRequests.slice(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
+    currentPage * itemsPerPage
   );
 
   const renderCellContent = (request: any, columnKey: TableColumnKey) => {
@@ -316,11 +433,7 @@ export default function Pengajuan() {
       case "date":
         return request.tgl_surat
           ? new Date(request.tgl_surat)
-              .toLocaleDateString("id-ID", {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-              })
+              .toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" })
               .replace(".", "")
           : "-";
       case "title":
@@ -328,8 +441,7 @@ export default function Pengajuan() {
           <div className="max-w-full">
             <div>{request.judul || "Tanpa Judul"}</div>
             <div className="mt-2 text-xs text-muted-foreground">
-              {request.lampiran_url &&
-              (request.no_surat || request.lampiran_url) ? (
+              {request.lampiran_url && (request.no_surat || request.lampiran_url) ? (
                 <Badge
                   variant="outline"
                   className="text-[11px] font-medium bg-white text-primary border-primary/20 px-1.5 py-0.5 transition-colors duration-150 hover:bg-primary/20 hover:text-primary hover:border-primary/30"
@@ -365,10 +477,7 @@ export default function Pengajuan() {
         const showPendingActions = normalizedStatus === "pending";
 
         return showPendingActions ? (
-          <div
-            className="flex gap-1 justify-center"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="flex gap-1 justify-center" onClick={(e) => e.stopPropagation()}>
             <Button
               size="sm"
               variant="ghost"
@@ -449,69 +558,79 @@ export default function Pengajuan() {
       {/* Table */}
 
       <div className="bg-card rounded-lg border overflow-hidden">
+
         <div role="table" className="w-full">
+
           <div role="rowgroup" className="border-b bg-muted/20">
-            <div
-              role="row"
-              className={`${TABLE_LAYOUT.rowBaseClass} ${TABLE_LAYOUT.rowGap} ${TABLE_LAYOUT.headerTextClass} ${TABLE_LAYOUT.headerHeight}`}
-            >
+
+            <div role="row" className="flex items-center gap-2.5 text-sm font-semibold text-foreground/80">
+
               {TABLE_COLUMNS.map((column) => (
                 <div
                   role="columnheader"
                   key={`head-${column.key}`}
-                  className={`${column.align} ${column.justify} ${column.headPadding} ${TABLE_LAYOUT.rowPadding} ${TABLE_LAYOUT.rowBaseClass} ${TABLE_LAYOUT.headerHeight}`}
+                  className={`${column.align} ${column.justify} ${column.headPadding} py-2 flex items-center`}
                   style={getColumnFlexStyles(column)}
                 >
                   {column.sortable ? (
                     <button
                       onClick={() => handleSort(column.sortKey ?? column.key)}
-                      className={`${TABLE_LAYOUT.rowBaseClass} w-full ${TABLE_LAYOUT.sortButtonGap} hover:text-foreground ${column.justify}`}
+                      className={`flex w-full items-center gap-[2px] hover:text-foreground ${column.justify}`}
                     >
                       {column.label}
-                      <ChevronsUpDown className={TABLE_LAYOUT.sortIconClass} />
+                      <ChevronsUpDown className="h-2.5 w-2.5 text-muted-foreground/80" />
                     </button>
                   ) : (
-                    <div
-                      className={`${TABLE_LAYOUT.rowBaseClass} w-full ${column.justify}`}
-                    >
-                      <span className={TABLE_LAYOUT.headerTextPadding}>
-                        {column.label}
-                      </span>
-                    </div>
+                    <div className={`flex w-full items-center ${column.justify}`}>{column.label}</div>
                   )}
                 </div>
               ))}
+
             </div>
+
           </div>
 
           <div role="rowgroup">
+
             {paginatedRequests.map((request) => (
+
               <div
+
                 role="row"
+
                 key={request.id}
-                className={`${TABLE_LAYOUT.rowBaseClass} ${TABLE_LAYOUT.rowGap} border-b last:border-b-0 text-sm cursor-pointer hover:bg-muted/50`}
+
+                className="flex items-center gap-2.5 border-b last:border-b-0 text-sm cursor-pointer hover:bg-muted/50"
+
                 onClick={() => setDetailDialog({ open: true, data: request })}
+
               >
+
                 {TABLE_COLUMNS.map((column) => (
                   <div
                     role="cell"
                     key={`${request.id}-${column.key}`}
-                    className={`${column.align} ${column.justify} ${column.cellPadding} ${TABLE_LAYOUT.rowPadding} ${TABLE_LAYOUT.rowBaseClass}`}
+                    className={`${column.align} ${column.justify} ${column.cellPadding} py-2 flex items-center`}
                     style={getColumnFlexStyles(column)}
                   >
                     {renderCellContent(request, column.key)}
                   </div>
                 ))}
+
               </div>
+
             ))}
 
             {paginatedRequests.length === 0 && (
-              <div className="p-6 text-center text-sm text-muted-foreground">
-                Tidak ada data.
-              </div>
+
+              <div className="p-6 text-center text-sm text-muted-foreground">Tidak ada data.</div>
+
             )}
+
           </div>
+
         </div>
+
       </div>
 
       {/* Pagination */}
@@ -521,11 +640,7 @@ export default function Pengajuan() {
             <PaginationItem>
               <PaginationPrevious
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                className={
-                  currentPage === 1
-                    ? "pointer-events-none opacity-50"
-                    : "cursor-pointer"
-                }
+                className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
               />
             </PaginationItem>
             {[...Array(totalPages)].map((_, i) => (
@@ -541,13 +656,9 @@ export default function Pengajuan() {
             ))}
             <PaginationItem>
               <PaginationNext
-                onClick={() =>
-                  setCurrentPage((p) => Math.min(totalPages, p + 1))
-                }
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                 className={
-                  currentPage === totalPages
-                    ? "pointer-events-none opacity-50"
-                    : "cursor-pointer"
+                  currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"
                 }
               />
             </PaginationItem>
@@ -556,10 +667,7 @@ export default function Pengajuan() {
       )}
 
       {/* Detail Dialog */}
-      <Dialog
-        open={detailDialog.open}
-        onOpenChange={(open) => setDetailDialog({ ...detailDialog, open })}
-      >
+      <Dialog open={detailDialog.open} onOpenChange={(open) => setDetailDialog({ ...detailDialog, open })}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Detail Pengajuan</DialogTitle>
@@ -570,72 +678,44 @@ export default function Pengajuan() {
                 <div className="grid gap-3 md:grid-cols-2">
                   <div className="space-y-1.5">
                     <p className="text-xs text-muted-foreground">No Surat</p>
-                    <p className="text-sm text-foreground">
-                      {detailDialog.data.no_surat || "-"}
-                    </p>
+                    <p className="text-sm text-foreground">{detailDialog.data.no_surat || "-"}</p>
                   </div>
                   <div className="space-y-1.5">
                     <p className="text-xs text-muted-foreground">Status</p>
-                    <StatusBadge
-                      status={
-                        normalizeStatus(detailDialog.data.status) || "pending"
-                      }
-                    />
+                    <StatusBadge status={normalizeStatus(detailDialog.data.status) || "pending"} />
                   </div>
                   <div className="space-y-1.5 md:col-span-2">
                     <p className="text-xs text-muted-foreground">Judul</p>
-                    <p className="text-sm text-foreground">
-                      {detailDialog.data.judul || "-"}
-                    </p>
+                    <p className="text-sm text-foreground">{detailDialog.data.judul || "-"}</p>
                   </div>
                   <div className="space-y-1.5">
                     <p className="text-xs text-muted-foreground">Bagian/Unit</p>
-                    <p className="text-sm text-foreground">
-                      {detailDialog.data.unit || "-"}
-                    </p>
+                    <p className="text-sm text-foreground">{detailDialog.data.unit || "-"}</p>
                   </div>
                   <div className="space-y-1.5">
                     <p className="text-xs text-muted-foreground">Jenis</p>
-                    <p className="text-sm text-foreground">
-                      {detailDialog.data.jenis || "-"}
-                    </p>
+                    <p className="text-sm text-foreground">{detailDialog.data.jenis || "-"}</p>
                   </div>
                   <div className="space-y-1.5">
-                    <p className="text-xs text-muted-foreground">
-                      Nilai Pengajuan
-                    </p>
-                    <p className="text-sm text-primary">
-                      {formatCurrency(detailDialog.data.nilai_pengajuan)}
-                    </p>
+                    <p className="text-xs text-muted-foreground">Nilai Pengajuan</p>
+                    <p className="text-sm text-primary">{formatCurrency(detailDialog.data.nilai_pengajuan)}</p>
                   </div>
                   <div className="space-y-1.5">
-                    <p className="text-xs text-muted-foreground">
-                      Tanggal Surat
-                    </p>
+                    <p className="text-xs text-muted-foreground">Tanggal Surat</p>
                     <p className="text-sm text-foreground">
-                      {detailDialog.data.tgl_surat
-                        ? new Date(
-                            detailDialog.data.tgl_surat,
-                          ).toLocaleDateString("id-ID")
-                        : "-"}
+                      {detailDialog.data.tgl_surat ? new Date(detailDialog.data.tgl_surat).toLocaleDateString("id-ID") : "-"}
                     </p>
                   </div>
                   {detailDialog.data.email && (
                     <div className="space-y-1.5 md:col-span-2">
-                      <p className="text-xs text-muted-foreground">
-                        Email Pengaju
-                      </p>
-                      <p className="text-sm text-foreground">
-                        {detailDialog.data.email}
-                      </p>
+                      <p className="text-xs text-muted-foreground">Email Pengaju</p>
+                      <p className="text-sm text-foreground">{detailDialog.data.email}</p>
                     </div>
                   )}
                   {detailDialog.data.catatan && (
                     <div className="space-y-1.5 md:col-span-2">
                       <p className="text-xs text-muted-foreground">Catatan</p>
-                      <p className="text-sm text-foreground">
-                        {detailDialog.data.catatan}
-                      </p>
+                      <p className="text-sm text-foreground">{detailDialog.data.catatan}</p>
                     </div>
                   )}
                   <div className="space-y-1.5 md:col-span-2">
@@ -653,8 +733,7 @@ export default function Pengajuan() {
                             className="inline-flex items-center gap-1 no-underline text-primary"
                           >
                             <FileText className="h-3 w-3" />
-                            {detailDialog.data.no_surat ||
-                              detailDialog.data.lampiran_url.split("/").pop()}
+                            {detailDialog.data.no_surat || detailDialog.data.lampiran_url.split("/").pop()}
                           </a>
                         </Badge>
                       ) : (
@@ -675,16 +754,11 @@ export default function Pengajuan() {
       </Dialog>
 
       {/* Confirmation Dialogs */}
-      <Dialog
-        open={confirmDialog.open}
-        onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}
-      >
+      <Dialog open={confirmDialog.open} onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {confirmDialog.type === "approve"
-                ? "Konfirmasi Approval"
-                : "Alasan Penolakan"}
+              {confirmDialog.type === "approve" ? "Konfirmasi Approval" : "Alasan Penolakan"}
             </DialogTitle>
             <DialogDescription>
               {confirmDialog.type === "approve"
@@ -706,17 +780,13 @@ export default function Pengajuan() {
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() =>
-                setConfirmDialog({ open: false, type: "approve", id: "" })
-              }
+              onClick={() => setConfirmDialog({ open: false, type: "approve", id: "" })}
             >
               Batal
             </Button>
             <Button
               onClick={confirmAction}
-              variant={
-                confirmDialog.type === "approve" ? "default" : "destructive"
-              }
+              variant={confirmDialog.type === "approve" ? "default" : "destructive"}
             >
               {confirmDialog.type === "approve" ? "Ya, Setujui" : "Tolak"}
             </Button>
@@ -726,3 +796,7 @@ export default function Pengajuan() {
     </div>
   );
 }
+
+
+
+

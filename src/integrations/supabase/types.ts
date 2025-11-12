@@ -18,7 +18,7 @@ export type Database = {
         Row: {
           action: string
           approver_id: string
-          approver_role: Database["public"]["Enums"]["app_role"]
+          approver_role: string | null
           catatan: string | null
           created_at: string | null
           id: string
@@ -27,7 +27,7 @@ export type Database = {
         Insert: {
           action: string
           approver_id: string
-          approver_role: Database["public"]["Enums"]["app_role"]
+          approver_role?: string | null
           catatan?: string | null
           created_at?: string | null
           id?: string
@@ -36,7 +36,7 @@ export type Database = {
         Update: {
           action?: string
           approver_id?: string
-          approver_role?: Database["public"]["Enums"]["app_role"]
+          approver_role?: string | null
           catatan?: string | null
           created_at?: string | null
           id?: string
@@ -258,7 +258,7 @@ export type Database = {
           approved_by_sekretaris: string | null
           approved_by_sekretaris_at: string | null
           catatan: string | null
-          current_approver_role: Database["public"]["Enums"]["app_role"] | null
+          current_approver_role: string | null
           email: string | null
           id: string
           jenis: string | null
@@ -279,7 +279,7 @@ export type Database = {
           approved_by_sekretaris?: string | null
           approved_by_sekretaris_at?: string | null
           catatan?: string | null
-          current_approver_role?: Database["public"]["Enums"]["app_role"] | null
+          current_approver_role?: string | null
           email?: string | null
           id?: string
           jenis?: string | null
@@ -300,7 +300,7 @@ export type Database = {
           approved_by_sekretaris?: string | null
           approved_by_sekretaris_at?: string | null
           catatan?: string | null
-          current_approver_role?: Database["public"]["Enums"]["app_role"] | null
+          current_approver_role?: string | null
           email?: string | null
           id?: string
           jenis?: string | null
@@ -350,51 +350,15 @@ export type Database = {
         }
         Relationships: []
       }
-      user_roles: {
-        Row: {
-          created_at: string | null
-          id: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      handle_approval: {
-        Args: { _action: string; _catatan?: string; _pengajuan_id: string }
-        Returns: Json
-      }
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
+      [_ in never]: never
     }
     Enums: {
-      app_role:
-        | "admin"
-        | "sekretaris_perusahaan"
-        | "direktur"
-        | "staff"
-        | "evaluator"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never

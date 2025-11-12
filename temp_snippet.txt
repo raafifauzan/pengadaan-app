@@ -1,0 +1,21 @@
+{TABLE_COLUMNS.map((column) => (
+                <div
+                  role="columnheader"
+                  key={`head-${column.key}`}
+                  className={`${column.align} ${column.justify} ${column.headPadding} ${TABLE_LAYOUT.rowPadding} flex items-center`}
+                  style={getColumnFlexStyles(column)}
+                >
+                  {column.sortable ? (
+                    <button
+                      onClick={() => handleSort(column.sortKey ?? column.key)}
+                      className={`flex w-full items-center gap-[2px] hover:text-foreground ${column.justify}`}
+                    >
+                      {column.label}
+                      <ChevronsUpDown className="h-2.5 w-2.5 text-muted-foreground/80" />
+                    </button>
+                  ) : (
+                    <div
+                      className={`flex w-full items-center ${column.justify}`}
+                    >
+                      {column.label}
+          

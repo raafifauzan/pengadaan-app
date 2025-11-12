@@ -1,0 +1,3 @@
+-- Placeholder migration
+-- The remote Supabase project already has a migration with version 20251110062018.
+-- The original SQL is unavailable in this repo, but we add this file so local and remote histories stay in sync.

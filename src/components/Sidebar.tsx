@@ -1,10 +1,11 @@
 import { LayoutDashboard, FileText, ClipboardCheck, Package, Wallet, ChevronDown } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 
 type MenuItem = {
-  icon: any;
+  icon: LucideIcon;
   label: string;
   path?: string;
   subItems?: { label: string; path: string }[];

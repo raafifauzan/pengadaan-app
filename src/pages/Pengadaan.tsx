@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Check, X, Settings } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -10,21 +10,23 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { StatusBadge } from "@/components/StatusBadge";
+import { StatusBadge, type ProcurementStatus } from "@/components/StatusBadge";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
+import { ProcurementFilterBar } from "@/components/ProcurementFilterBar";
 
-type PengadaanStatus = "waiting_po" | "po_issued" | "in_delivery" | "completed";
+type PengadaanStatus = Extract<ProcurementStatus, "waiting_po" | "po_issued" | "in_delivery" | "completed">;
 
 interface PengadaanItem {
   id: string;
   title: string;
   vendor: string;
   amount: number;
+  jenis: string;
   status: PengadaanStatus;
   poNumber?: string;
   estimatedDelivery?: string;
@@ -36,6 +38,7 @@ const mockPengadaan: PengadaanItem[] = [
     title: "Peralatan Meeting",
     vendor: "PT Maju Jaya",
     amount: 8000000,
+    jenis: "Barang",
     status: "waiting_po",
     estimatedDelivery: "2024-01-25",
   },
@@ -44,6 +47,7 @@ const mockPengadaan: PengadaanItem[] = [
     title: "Pengadaan Komputer",
     vendor: "PT Tech Solutions",
     amount: 35000000,
+    jenis: "Barang",
     status: "po_issued",
     poNumber: "PO-2024-001",
     estimatedDelivery: "2024-01-30",
@@ -53,6 +57,7 @@ const mockPengadaan: PengadaanItem[] = [
     title: "Meja Kerja",
     vendor: "CV Furniture Sejahtera",
     amount: 18000000,
+    jenis: "Barang",
     status: "in_delivery",
     poNumber: "PO-2024-002",
     estimatedDelivery: "2024-01-20",
@@ -61,6 +66,10 @@ const mockPengadaan: PengadaanItem[] = [
 
 export default function Pengadaan() {
   const { toast } = useToast();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [filterJenis, setFilterJenis] = useState<string>("all");
+  const [nilaiFilter, setNilaiFilter] = useState<[number, number]>([0, Number.MAX_SAFE_INTEGER]);
 
   const handleApprove = (id: string) => {
     toast({
@@ -85,6 +94,39 @@ export default function Pengadaan() {
     }).format(amount);
   };
 
+  const nilaiRange = useMemo(() => {
+    if (!mockPengadaan.length) return { min: 0, max: 1 };
+    const values = mockPengadaan.map((item) => item.amount);
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    return { min, max: min === max ? min + 1 : max };
+  }, []);
+
+  useEffect(() => {
+    setNilaiFilter([nilaiRange.min, nilaiRange.max]);
+  }, [nilaiRange.min, nilaiRange.max]);
+
+  const jenisOptions = useMemo(() => {
+    const set = new Set<string>();
+    mockPengadaan.forEach((item) => set.add(item.jenis));
+    return ["all", ...Array.from(set)];
+  }, []);
+
+  const filteredPengadaan = useMemo(() => {
+    const isNilaiFilterActive = nilaiFilter[1] !== Number.MAX_SAFE_INTEGER;
+    return mockPengadaan.filter((item) => {
+      const matchesStatus = filterStatus === "all" || item.status === filterStatus;
+      const matchesJenis = filterJenis === "all" || item.jenis.toLowerCase() === filterJenis.toLowerCase();
+      const matchesSearch =
+        item.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.vendor.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesNilai =
+        !isNilaiFilterActive || (item.amount >= nilaiFilter[0] && item.amount <= nilaiFilter[1]);
+      return matchesStatus && matchesJenis && matchesSearch && matchesNilai;
+    });
+  }, [filterJenis, filterStatus, nilaiFilter, searchQuery]);
+
   return (
     <div className="p-4 md:p-8 space-y-6">
       <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
@@ -99,6 +141,30 @@ export default function Pengadaan() {
           Pengaturan
         </Button>
       </div>
+
+      <ProcurementFilterBar
+        searchPlaceholder="Cari berdasarkan ID, Judul, atau Vendor..."
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+        statusOptions={[
+          { value: "all", label: "Semua Status" },
+          { value: "waiting_po", label: "Menunggu PO" },
+          { value: "po_issued", label: "PO Terbit" },
+          { value: "in_delivery", label: "Dalam Pengiriman" },
+          { value: "completed", label: "Selesai" },
+        ]}
+        statusValue={filterStatus}
+        onStatusChange={setFilterStatus}
+        jenisOptions={jenisOptions.map((value) => ({
+          value,
+          label: value === "all" ? "Semua Jenis" : value,
+        }))}
+        jenisValue={filterJenis}
+        onJenisChange={setFilterJenis}
+        nilaiRange={[nilaiRange.min, nilaiRange.max]}
+        nilaiValue={nilaiFilter}
+        onNilaiChange={setNilaiFilter}
+      />
 
       <Tabs defaultValue="approval" className="space-y-4">
         <TabsList>
@@ -122,7 +188,7 @@ export default function Pengadaan() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {mockPengadaan
+                  {filteredPengadaan
                     .filter((item) => item.status === "waiting_po")
                     .map((item) => (
                       <TableRow key={item.id} className="hover:bg-muted/50">
@@ -139,7 +205,7 @@ export default function Pengadaan() {
                           {formatCurrency(item.amount)}
                         </TableCell>
                         <TableCell className="px-3 py-2 text-center">
-                          <StatusBadge status={item.status as any} />
+                          <StatusBadge status={item.status} />
                         </TableCell>
                         <TableCell className="px-3 py-2 text-sm text-center">
                           {item.estimatedDelivery
@@ -192,7 +258,7 @@ export default function Pengadaan() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {mockPengadaan
+                  {filteredPengadaan
                     .filter((item) => item.status !== "waiting_po")
                     .map((item) => (
                       <TableRow key={item.id} className="hover:bg-muted/50">
@@ -212,7 +278,7 @@ export default function Pengadaan() {
                           {formatCurrency(item.amount)}
                         </TableCell>
                         <TableCell className="px-3 py-2 text-center">
-                          <StatusBadge status={item.status as any} />
+                          <StatusBadge status={item.status} />
                         </TableCell>
                         <TableCell className="px-3 py-2 text-sm text-center">
                           {item.estimatedDelivery

@@ -7,6 +7,7 @@ import { Sidebar } from "./components/Sidebar";
 import Dashboard from "./pages/Dashboard";
 import Pengajuan from "./pages/Pengajuan";
 import FormEvaluasi from "./pages/FormEvaluasi";
+import FormApproval from "./pages/FormApproval";
 import Tracking from "./pages/Tracking";
 import Pengadaan from "./pages/Pengadaan";
 import KonfirmasiPembayaran from "./pages/KonfirmasiPembayaran";
@@ -28,7 +29,7 @@ const App = () => (
               <Route path="/tracking" element={<Tracking />} />
               <Route path="/pengajuan" element={<Pengajuan />} />
               <Route path="/evaluasi" element={<FormEvaluasi />} />
-              <Route path="/evaluasi/progres" element={<FormEvaluasi defaultTab="progres" />} />
+              <Route path="/evaluasi/progres" element={<FormApproval />} />
               <Route path="/pengadaan" element={<Pengadaan />} />
               <Route path="/konfirmasi-pembayaran" element={<KonfirmasiPembayaran />} />
               <Route path="*" element={<NotFound />} />
