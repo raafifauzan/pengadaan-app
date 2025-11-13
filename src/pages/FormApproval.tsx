@@ -48,9 +48,9 @@ type ProgresSortKey = "kode_form" | "judul" | "unit";
 const approvalFlow = [
   { key: "sekper", label: "Sekretaris Perusahaan", column: "sekper_date" as const },
   { key: "sevpOperation", label: "SEVP Operation", column: "sevp_operation_date" as const },
-  { key: "finance", label: "Divisi Keuangan", column: "keuangan_date" as const },
+  { key: "finance", label: "Keuangan", column: "keuangan_date" as const },
   { key: "sevpSupport", label: "SEVP Business Support", column: "sevp_support_date" as const },
-  { key: "director", label: "Direktur Utama", column: "direktur_date" as const },
+  { key: "director", label: "Direktur", column: "direktur_date" as const },
 ];
 type ApprovalColumn = (typeof approvalFlow)[number]["column"];
 
@@ -495,7 +495,7 @@ export default function FormApproval() {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[120px] px-6">
-                  <button onClick={() => handleSortChange("kode_form")} className="flex items-center gap-1 hover:text-foreground">
+                  <button onClick={() => handleSortChange("kode_form")} className="text-left flex items-center gap-1 hover:text-foreground">
                     No Form Evaluasi
                     <ChevronsUpDown
                       className={cn(
@@ -521,7 +521,7 @@ export default function FormApproval() {
                     {flow.label}
                   </TableHead>
                 ))}
-                <TableHead className="w-[120px] px-4 text-center">Lampiran</TableHead>
+                <TableHead className="w-[120px] px-4 text-center">Lampiran Form Evaluasi</TableHead>
                 <TableHead className="w-[200px] px-4 text-center">Status &amp; Aksi</TableHead>
               </TableRow>
             </TableHeader>

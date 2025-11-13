@@ -52,6 +52,7 @@ export type Database = {
           },
         ]
       }
+
       form_evaluasi: {
         Row: {
           anggaran_hps: number | null
@@ -96,6 +97,7 @@ export type Database = {
           },
         ]
       }
+
       form_approval: {
         Row: {
           direktur_date: string | null
@@ -131,6 +133,7 @@ export type Database = {
           },
         ]
       }
+
       LACC: {
         Row: {
           faktur_pajak: string | null
@@ -176,6 +179,7 @@ export type Database = {
         }
         Relationships: []
       }
+
       Pengadaan: {
         Row: {
           "BAGIAN / UNIT": string | null
@@ -251,6 +255,7 @@ export type Database = {
         }
         Relationships: []
       }
+
       pengajuan: {
         Row: {
           approved_by_direktur: string | null
@@ -317,6 +322,7 @@ export type Database = {
         }
         Relationships: []
       }
+
       "Project LACC": {
         Row: {
           jenis_project: string | null
@@ -350,7 +356,247 @@ export type Database = {
         }
         Relationships: []
       }
+
+      // ---------- NEW TABLES ----------
+
+      metode_pengadaan: {
+        Row: {
+          id: string
+          kode: string
+          nama_metode: string
+          deskripsi: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          kode: string
+          nama_metode: string
+          deskripsi?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          kode?: string
+          nama_metode?: string
+          deskripsi?: string | null
+          created_at?: string | null
+        }
+        Relationships: []
+      }
+
+      pengadaan: {
+        Row: {
+          id: string
+          kode_form: string
+          form_evaluasi_id: string
+          metode_id: string
+          status_pengadaan: string | null
+          created_at: string | null
+          created_by: string | null
+        }
+        Insert: {
+          id?: string
+          kode_form: string
+          form_evaluasi_id: string
+          metode_id: string
+          status_pengadaan?: string | null
+          created_at?: string | null
+          created_by?: string | null
+        }
+        Update: {
+          id?: string
+          kode_form?: string
+          form_evaluasi_id?: string
+          metode_id?: string
+          status_pengadaan?: string | null
+          created_at?: string | null
+          created_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pengadaan_form_evaluasi_id_fkey"
+            columns: ["form_evaluasi_id"]
+            isOneToOne: false
+            referencedRelation: "form_evaluasi"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pengadaan_metode_id_fkey"
+            columns: ["metode_id"]
+            isOneToOne: false
+            referencedRelation: "metode_pengadaan"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pengadaan_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+
+      tahap_pengadaan: {
+        Row: {
+          id: string
+          pengadaan_id: string
+          nama_tahap: string
+          urutan: number
+          tanggal_tahap: string | null
+          vendor_id: string | null
+          nilai_fix: number | null
+          catatan: string | null
+          created_at: string | null
+          created_by: string | null
+        }
+        Insert: {
+          id?: string
+          pengadaan_id: string
+          nama_tahap: string
+          urutan: number
+          tanggal_tahap?: string | null
+          vendor_id?: string | null
+          nilai_fix?: number | null
+          catatan?: string | null
+          created_at?: string | null
+          created_by?: string | null
+        }
+        Update: {
+          id?: string
+          pengadaan_id?: string
+          nama_tahap?: string
+          urutan?: number
+          tanggal_tahap?: string | null
+          vendor_id?: string | null
+          nilai_fix?: number | null
+          catatan?: string | null
+          created_at?: string | null
+          created_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tahap_pengadaan_pengadaan_id_fkey"
+            columns: ["pengadaan_id"]
+            isOneToOne: false
+            referencedRelation: "pengadaan"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tahap_pengadaan_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendor"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tahap_pengadaan_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+
+      template_tahapan: {
+        Row: {
+          id: string
+          metode_id: string
+          urutan: number
+          nama_tahap: string
+          deskripsi: string | null
+        }
+        Insert: {
+          id?: string
+          metode_id: string
+          urutan: number
+          nama_tahap: string
+          deskripsi?: string | null
+        }
+        Update: {
+          id?: string
+          metode_id?: string
+          urutan?: number
+          nama_tahap?: string
+          deskripsi?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "template_tahapan_metode_id_fkey"
+            columns: ["metode_id"]
+            isOneToOne: false
+            referencedRelation: "metode_pengadaan"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+
+      user_roles: {
+        Row: {
+          id: string
+          user_id: string
+          role: string
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          role: string
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          role?: string
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+
+      vendor: {
+        Row: {
+          id: string
+          kode_vendor: string
+          nama_vendor: string
+          alamat: string | null
+          kontak: string | null
+          email: string | null
+          status_vendor: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          kode_vendor: string
+          nama_vendor: string
+          alamat?: string | null
+          kontak?: string | null
+          email?: string | null
+          status_vendor?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          kode_vendor?: string
+          nama_vendor?: string
+          alamat?: string | null
+          kontak?: string | null
+          email?: string | null
+          status_vendor?: string | null
+          created_at?: string | null
+        }
+        Relationships: []
+      }
     }
+
     Views: {
       [_ in never]: never
     }
