@@ -358,19 +358,23 @@ export default function FormEvaluasi() {
               <TableRow>
                 {EVALUATION_TABLE_COLUMNS.map((column) => {
                   const alignClass = column.align ?? "";
-                  const justifyClass = column.justify ?? "";
+                  const justifyClass = column.justify ?? "justify-start";
                   const isSortable = Boolean(column.sortable);
+                  const widthStyle = {
+                    width: column.basis,
+                    minWidth: column.minWidth ?? column.basis,
+                  };
                   return (
                     <TableHead
                       key={column.key}
-                      className={cn(column.headPadding, alignClass, justifyClass, "text-sm font-semibold text-muted-foreground")}
-                      style={{ minWidth: column.minWidth ?? column.basis }}
+                      className={cn(column.headPadding, alignClass, "text-sm font-semibold text-muted-foreground")}
+                      style={widthStyle}
                     >
                       {isSortable ? (
                         <button
                           type="button"
                           onClick={() => handleSortChange(column.key)}
-                          className="flex w-full items-center gap-1"
+                          className={cn("flex w-full items-center gap-1", justifyClass)}
                         >
                           {column.label}
                           <ChevronsUpDown
@@ -381,7 +385,7 @@ export default function FormEvaluasi() {
                           />
                         </button>
                       ) : (
-                        column.label
+                        <span className={cn("flex w-full", justifyClass)}>{column.label}</span>
                       )}
                     </TableHead>
                   );
@@ -399,9 +403,11 @@ export default function FormEvaluasi() {
                   >
                     {EVALUATION_TABLE_COLUMNS.map((column) => {
                       const alignClass = column.align ?? "";
-                      const justifyClass = column.justify ?? "";
                       let content: ReactNode;
-
+                      const widthStyle = {
+                        width: column.basis,
+                        minWidth: column.minWidth ?? column.basis,
+                      };
                       switch (column.key) {
                         case "created_at":
                           content = formatDateValue(evaluation.pengajuan?.timestamp ?? evaluation.created_at);
@@ -460,8 +466,8 @@ export default function FormEvaluasi() {
                       return (
                         <TableCell
                           key={`${evaluation.id}-${column.key}`}
-                          className={cn(column.cellPadding, alignClass, justifyClass)}
-                          style={{ minWidth: column.minWidth ?? column.basis }}
+                          className={cn(column.cellPadding, alignClass)}
+                          style={widthStyle}
                         >
                           {content}
                         </TableCell>
