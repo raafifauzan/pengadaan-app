@@ -1,9 +1,15 @@
-import { useMemo, useState } from "react";
-import { Settings, ChevronsUpDown, Eye } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Settings, PenLine, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { ProcurementFilterBar } from "@/components/ProcurementFilterBar";
+import { DataTable } from "@/components/DataTable";
+import {
+  PENGADAAN_TABLE_COLUMNS,
+  type PengadaanColumnKey,
+  type TableColumnConfig,
+} from "@/config/table";
 import {
   Pagination,
   PaginationContent,
@@ -14,69 +20,41 @@ import {
 } from "@/components/ui/pagination";
 import {
   usePengadaan,
+  useUpdatePengadaan,
   type PengadaanWithRelations,
 } from "@/hooks/usePengadaan";
-
-type ColumnKey =
-  | "tanggal_pengajuan"
-  | "paket_pengajuan"
-  | "jenis"
-  | "metode"
-  | "hps"
-  | "status_aksi";
-
-interface ColumnConfig {
-  key: ColumnKey;
-  label: string;
-  sortable?: boolean;
-  sortKey?: keyof PengadaanWithRelations | "pengajuan_tanggal";
-  align?: "left" | "center" | "right";
-}
-
-const COLUMNS: ColumnConfig[] = [
-  {
-    key: "tanggal_pengajuan",
-    label: "Tanggal",
-    sortable: true,
-    sortKey: "pengajuan_tanggal",
-    align: "left",
-  },
-  {
-    key: "paket_pengajuan",
-    label: "Paket Pengajuan",
-    sortable: true,
-    sortKey: "pengajuan_judul",
-    align: "left",
-  },
-  {
-    key: "hps",
-    label: "Nilai Project", // sebelumnya "Nilai HPS"
-    sortable: true,
-    sortKey: "form_evaluasi_anggaran_hps",
-    align: "right",
-  },
-  {
-    key: "jenis",
-    label: "Jenis",
-    sortable: true,
-    sortKey: "pengajuan_jenis",
-    align: "left",
-  },
-  {
-    key: "metode",
-    label: "Metode",
-    sortable: true,
-    sortKey: "metode_nama",
-    align: "left",
-  },
-  {
-    key: "status_aksi",
-    label: "Status & Aksi",
-    sortable: false,
-    align: "center",
-  },
-];
-
+import { StatusBadge } from "@/components/StatusBadge";
+import type { ProcurementStatus as ProcurementStatusType } from "@/components/StatusBadge";
+import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
+  useSaveTahapPengadaan,
+  useTahapPengadaan,
+  useTemplateTahapan,
+} from "@/hooks/useTahapanPengadaan";
 
 const formatStatusLabel = (status: string) => {
   if (!status) return "-";
@@ -84,6 +62,28 @@ const formatStatusLabel = (status: string) => {
     .split("_")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
+};
+
+const normalizeProcurementStatus = (
+  status?: string | null
+): ProcurementStatusType => {
+  if (!status) return "pending";
+  const normalized = status
+    .toLowerCase()
+    .replace(/\s+/g, "_") as ProcurementStatusType;
+  const allowed: ProcurementStatusType[] = [
+    "pending",
+    "approved",
+    "rejected",
+    "in_progress",
+    "completed",
+    "pending_evaluation",
+    "evaluated",
+    "waiting_po",
+    "po_issued",
+    "in_delivery",
+  ];
+  return allowed.includes(normalized) ? normalized : "pending";
 };
 
 const formatDate = (value: string | null | undefined) => {
@@ -108,9 +108,31 @@ const formatNumberId = (value?: number | null) => {
   }).format(value);
 };
 
+const formatCurrency = (value?: number | null) => {
+  if (value === null || value === undefined) return "-";
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0,
+  }).format(value);
+};
+
+type TahapanFormValue = {
+  templateId: string;
+  namaTahap: string;
+  deskripsi?: string | null;
+  urutan: number;
+  tanggal: string;
+  catatan: string;
+};
+
 export default function Pengadaan() {
   const { toast } = useToast();
   const { data: pengadaanData, isLoading } = usePengadaan();
+  const { mutateAsync: updatePengadaan, isPending: isUpdating } =
+    useUpdatePengadaan();
+  const { mutateAsync: saveTahapan, isPending: isSavingTahapan } =
+    useSaveTahapPengadaan();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
@@ -118,7 +140,8 @@ export default function Pengadaan() {
   const [nilaiFilter, setNilaiFilter] = useState<[number, number]>([0, 0]); // belum dipakai
   const [currentPage, setCurrentPage] = useState(1);
   const [sortConfig, setSortConfig] = useState<{
-    key: string;
+    columnKey: PengadaanColumnKey;
+    sortKey: string;
     direction: "asc" | "desc";
   } | null>(null);
 
@@ -160,15 +183,109 @@ export default function Pengadaan() {
     ];
   }, [pengadaanData]);
 
-  const handleSort = (col: ColumnConfig) => {
+  const statusChoices = useMemo(() => {
+    const filtered = statusOptions.filter((opt) => opt.value !== "all");
+    if (filtered.length > 0) return filtered;
+    const defaults = ["draft", "proses", "selesai"];
+    return defaults.map((value) => ({
+      value,
+      label: formatStatusLabel(value),
+    }));
+  }, [statusOptions]);
+
+  const metodeChoices = useMemo(() => {
+    const map = new Map<string, string>();
+    (pengadaanData ?? []).forEach((item) => {
+      if (item.metode_id) {
+        map.set(
+          item.metode_id,
+          (item.metode_nama && item.metode_nama.trim()) || item.metode_id
+        );
+      }
+    });
+    return Array.from(map.entries()).map(([value, label]) => ({
+      value,
+      label,
+    }));
+  }, [pengadaanData]);
+
+  const [editDialog, setEditDialog] = useState<{
+    open: boolean;
+    row: PengadaanWithRelations | null;
+  }>({
+    open: false,
+    row: null,
+  });
+  const [editForm, setEditForm] = useState({
+    status: "",
+    metodeId: "",
+  });
+  const [tahapanForm, setTahapanForm] = useState<TahapanFormValue[]>([]);
+  const [tahapanDirty, setTahapanDirty] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(true);
+
+  const selectedMetodeId =
+    editDialog.open && editForm.metodeId ? editForm.metodeId : undefined;
+  const selectedPengadaanId = editDialog.row?.id;
+
+  const { data: templateTahapan, isLoading: isTemplateLoading } =
+    useTemplateTahapan(selectedMetodeId, editDialog.open);
+  const { data: existingTahapan, isLoading: isTahapLoading } =
+    useTahapPengadaan(selectedPengadaanId, editDialog.open);
+
+  useEffect(() => {
+    if (!editDialog.open) return;
+    if (!templateTahapan) {
+      setTahapanForm([]);
+      return;
+    }
+    if (tahapanDirty) return;
+
+    const nextValues: TahapanFormValue[] = templateTahapan.map(
+      (template, index) => {
+        const existing = existingTahapan?.find(
+          (item) =>
+            item.urutan === template.urutan ||
+            item.nama_tahap === template.nama_tahap
+        );
+
+        return {
+          templateId: template.id,
+          namaTahap: template.nama_tahap,
+          deskripsi: template.deskripsi,
+          urutan: template.urutan ?? index + 1,
+          tanggal: existing?.tanggal_tahap
+            ? existing.tanggal_tahap.slice(0, 10)
+            : "",
+          catatan: existing?.catatan ?? "",
+        };
+      }
+    );
+
+    setTahapanForm(nextValues);
+  }, [templateTahapan, existingTahapan, editDialog.open, tahapanDirty]);
+
+  useEffect(() => {
+    if (!editDialog.open) {
+      setTahapanForm([]);
+      setTahapanDirty(false);
+      setDetailOpen(true);
+    }
+  }, [editDialog.open]);
+
+  const handleSort = (col: TableColumnConfig<PengadaanColumnKey>) => {
     if (!col.sortable) return;
-    const key = (col.sortKey ?? col.key) as string;
+    const sortKey = (col.sortKey ?? col.key) as string;
 
     setSortConfig((prev) => {
-      if (prev && prev.key === key) {
-        return { key, direction: prev.direction === "asc" ? "desc" : "asc" };
+      if (prev && prev.columnKey === col.key) {
+        return {
+          columnKey: col.key,
+          sortKey,
+          direction: prev.direction === "asc" ? "desc" : "asc",
+        };
       }
-      return { key, direction: "asc" };
+      return { columnKey: col.key, sortKey, direction: "asc" };
     });
   };
 
@@ -203,20 +320,20 @@ export default function Pengadaan() {
 
     if (sortConfig) {
       result = [...result].sort((a, b) => {
-        const key = sortConfig.key as keyof PengadaanWithRelations;
+        const { columnKey, sortKey, direction } = sortConfig;
 
-        if (key === "pengajuan_tanggal") {
+        if (columnKey === "tanggal_pengajuan") {
           const aTime = a.pengajuan_tanggal
             ? new Date(a.pengajuan_tanggal).getTime()
             : 0;
           const bTime = b.pengajuan_tanggal
             ? new Date(b.pengajuan_tanggal).getTime()
             : 0;
-          return sortConfig.direction === "asc" ? aTime - bTime : bTime - aTime;
+          return direction === "asc" ? aTime - bTime : bTime - aTime;
         }
 
-        const aVal = (a as any)[key];
-        const bVal = (b as any)[key];
+        const aVal = (a as any)[sortKey];
+        const bVal = (b as any)[sortKey];
 
         if (aVal == null) return 1;
         if (bVal == null) return -1;
@@ -224,8 +341,8 @@ export default function Pengadaan() {
         const aStr = String(aVal).toLowerCase();
         const bStr = String(bVal).toLowerCase();
 
-        if (aStr < bStr) return sortConfig.direction === "asc" ? -1 : 1;
-        if (aStr > bStr) return sortConfig.direction === "asc" ? 1 : -1;
+        if (aStr < bStr) return direction === "asc" ? -1 : 1;
+        if (aStr > bStr) return direction === "asc" ? 1 : -1;
         return 0;
       });
     }
@@ -239,16 +356,122 @@ export default function Pengadaan() {
     currentPage * itemsPerPage
   );
 
-  const handleLihatDetail = (row: PengadaanWithRelations) => {
-    toast({
-      title: "Detail Pengadaan",
-      description: `Pengajuan: ${
-        row.pengajuan_judul ?? "-"
-      } (${row.form_evaluasi_kode ?? row.kode_form})`,
-    });
+  const updateTahapanValue = (
+    templateId: string,
+    field: "tanggal" | "catatan",
+    value: string
+  ) => {
+    setTahapanDirty(true);
+    setTahapanForm((prev) =>
+      prev.map((item) =>
+        item.templateId === templateId ? { ...item, [field]: value } : item
+      )
+    );
   };
 
-  const renderCell = (row: PengadaanWithRelations, col: ColumnKey) => {
+  const openEditDialog = (row: PengadaanWithRelations) => {
+    setEditDialog({ open: true, row });
+    setEditForm({
+      status: row.status_pengadaan ?? statusChoices[0]?.value ?? "draft",
+      metodeId: row.metode_id ?? metodeChoices[0]?.value ?? "",
+    });
+    setTahapanDirty(false);
+    setTahapanForm([]);
+  };
+
+  const closeProgressDialog = () => {
+    setEditDialog({ open: false, row: null });
+    setTahapanForm([]);
+    setTahapanDirty(false);
+  };
+
+  const handleDialogOpenChange = (open: boolean) => {
+    if (!open) {
+      closeProgressDialog();
+    }
+  };
+
+  const canSubmit = Boolean(editForm.status && editForm.metodeId);
+  const isProgressLoading =
+    editDialog.open && (isTemplateLoading || isTahapLoading);
+  const isSaving = isUpdating || isSavingTahapan;
+  const currentRowStatus = normalizeProcurementStatus(
+    editDialog.row?.status_pengadaan
+  );
+
+  const handleSaveProgress = async () => {
+    if (!editDialog.row) return;
+
+    const tasks: Promise<unknown>[] = [];
+    const shouldUpdatePengadaan =
+      editDialog.row.status_pengadaan !== editForm.status ||
+      editDialog.row.metode_id !== editForm.metodeId;
+
+    if (shouldUpdatePengadaan) {
+      tasks.push(
+        updatePengadaan({
+          id: editDialog.row.id,
+          updates: {
+            status_pengadaan: editForm.status,
+            metode_id: editForm.metodeId,
+          },
+        })
+      );
+    }
+
+    const shouldSyncTahapan =
+      (templateTahapan && templateTahapan.length > 0) ||
+      (existingTahapan?.length ?? 0) > 0;
+
+    if (shouldSyncTahapan && editDialog.row) {
+      tasks.push(
+        saveTahapan({
+          pengadaanId: editDialog.row.id,
+          tahapan: (templateTahapan ?? []).map((template, index) => {
+            const draft = tahapanForm.find(
+              (item) => item.templateId === template.id
+            );
+            const fallbackIndex = template.urutan ?? index + 1;
+            return {
+              nama_tahap: template.nama_tahap,
+              urutan: draft?.urutan ?? fallbackIndex,
+              tanggal_tahap: draft?.tanggal || null,
+              catatan: draft?.catatan || null,
+            };
+          }),
+        })
+      );
+    }
+
+    if (tasks.length === 0) {
+      toast({
+        title: "Tidak ada perubahan",
+        description: "Belum ada data yang disesuaikan pada dialog ini.",
+      });
+      closeProgressDialog();
+      return;
+    }
+
+    try {
+      await Promise.all(tasks);
+      toast({
+        title: "Pengadaan diperbarui",
+        description: "Progress dokumen dan metode berhasil disimpan.",
+      });
+      closeProgressDialog();
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Gagal menyimpan",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Terjadi kesalahan saat memperbarui pengadaan.",
+      });
+    }
+  };
+
+  const renderCell = (row: PengadaanWithRelations, col: PengadaanColumnKey) => {
     switch (col) {
       case "tanggal_pengajuan":
         return (
@@ -304,14 +527,48 @@ export default function Pengadaan() {
       }
 
       case "hps": {
-        const hps = (row as any).form_evaluasi_anggaran_hps as
-          | number
-          | null
-          | undefined;
+        const hps = row.form_evaluasi_anggaran_hps ?? null;
+        const nilaiPengajuan = row.pengajuan_nilai_pengajuan ?? null;
+        const hasComparison = hps != null && nilaiPengajuan != null;
+        const isHpsHigher = hasComparison ? nilaiPengajuan >= hps : null;
+        const diffPercent =
+          hasComparison && hps !== 0
+            ? ((hps - nilaiPengajuan) / hps) * 100
+            : null;
+
+        const diffClass =
+          isHpsHigher === null
+            ? "text-muted-foreground"
+            : isHpsHigher && diffPercent !== 0
+            ? "text-emerald-600"
+            : !isHpsHigher
+            ? "text-red-600"
+            : "text-muted-foreground";
+
         return (
-          <span className="text-sm text-foreground">
-            {formatNumberId(hps)}
-          </span>
+          <div className="space-y-0.5">
+            <span className="text-sm font-semibold text-foreground">
+              {formatNumberId(hps)}
+            </span>
+            {nilaiPengajuan != null && (
+              <div className="flex items-center gap-2 text-xs">
+                <span className={diffClass}>
+                  {formatNumberId(nilaiPengajuan)}
+                </span>
+                {diffPercent != null && (
+                  <span className={diffClass}>
+                    (
+                    {diffPercent === 0
+                      ? "0.0%"
+                      : `${diffPercent > 0 ? "+" : ""}${diffPercent.toFixed(
+                          1
+                        )}%`}
+                    )
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
         );
       }
 
@@ -319,27 +576,28 @@ export default function Pengadaan() {
         const status = row.status_pengadaan || "draft";
         const isDraft = status.toLowerCase() === "draft";
         return (
-          <div className="flex items-center justify-center gap-2">
+          <div className="flex items-center gap-2">
             <Badge
               variant={isDraft ? "outline" : "secondary"}
-              className={`px-2 py-0.5 text-[11px] font-medium ${
+              className={cn(
+                "px-2 py-0.5 text-[11px] font-medium",
                 isDraft
                   ? "border-amber-300 text-amber-700 bg-amber-50"
                   : "bg-emerald-50 text-emerald-700"
-              }`}
+              )}
             >
               {formatStatusLabel(status)}
             </Badge>
             <Button
               size="icon"
               variant="ghost"
-              className="h-7 w-7 rounded-full border border-muted-foreground/20 hover:bg-muted/60"
+              className="h-7 w-7 rounded-full border border-muted-foreground/30 bg-transparent text-muted-foreground transition-colors hover:bg-muted-foreground hover:text-background"
               onClick={(e) => {
                 e.stopPropagation();
-                handleLihatDetail(row);
+                openEditDialog(row);
               }}
             >
-              <Eye className="h-3.5 w-3.5" />
+              <PenLine className="h-3 w-3" />
             </Button>
           </div>
         );
@@ -389,69 +647,24 @@ export default function Pengadaan() {
       />
 
       {/* TABLE */}
-      <div className="rounded-lg border bg-card overflow-hidden">
-        <table className="min-w-full border-collapse text-sm">
-          <thead className="bg-muted/40">
-            <tr className="border-b">
-              {COLUMNS.map((col) => (
-                <th
-                  key={col.key}
-                  className={`px-4 py-2 text-xs font-semibold text-muted-foreground ${
-                    col.align === "center"
-                      ? "text-center"
-                      : col.align === "right"
-                      ? "text-right"
-                      : "text-left"
-                  }`}
-                >
-                  {col.sortable ? (
-                    <button
-                      type="button"
-                      onClick={() => handleSort(col)}
-                      className="inline-flex items-center gap-1 hover:text-foreground"
-                    >
-                      {col.label}
-                      <ChevronsUpDown className="h-3 w-3" />
-                    </button>
-                  ) : (
-                    col.label
-                  )}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y">
-            {paginatedPengadaan.map((row) => (
-              <tr key={row.id} className="hover:bg-muted/40 transition-colors">
-                {COLUMNS.map((col) => (
-                  <td
-                    key={col.key}
-                    className={`px-4 py-2 align-mid ${
-                      col.align === "center"
-                        ? "text-center"
-                        : col.align === "right"
-                        ? "text-right"
-                        : "text-left"
-                    }`}
-                  >
-                    {renderCell(row, col.key)}
-                  </td>
-                ))}
-              </tr>
-            ))}
-
-            {paginatedPengadaan.length === 0 && (
-              <tr>
-                <td
-                  colSpan={COLUMNS.length}
-                  className="px-4 py-6 text-center text-sm text-muted-foreground"
-                >
-                  Tidak ada data pengadaan.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+      <div className="rounded-lg border bg-card overflow-x-auto">
+        <div className="min-w-[900px]">
+          <DataTable
+            columns={PENGADAAN_TABLE_COLUMNS}
+            rows={paginatedPengadaan}
+            rowKey={(row) => row.id}
+            renderCell={renderCell}
+            sortConfig={
+              sortConfig
+                ? { key: sortConfig.columnKey, direction: sortConfig.direction }
+                : undefined
+            }
+            onSortChange={handleSort}
+            emptyMessage="Tidak ada data pengadaan."
+            rowClassName="hover:bg-muted/40 transition-colors border-b"
+            onRowDoubleClick={openEditDialog}
+          />
+        </div>
       </div>
 
       {/* Pagination */}
@@ -494,6 +707,368 @@ export default function Pengadaan() {
           </PaginationContent>
         </Pagination>
       )}
+
+      <Dialog open={editDialog.open} onOpenChange={handleDialogOpenChange}>
+        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto space-y-6 text-sm">
+          <DialogHeader>
+            <Accordion
+              type="single"
+              collapsible
+              defaultValue="detail"
+              className="w-auto"
+            >
+              <AccordionItem value="detail" className="border-none">
+                <AccordionTrigger className="group flex flex-col items-start gap-2 py-0 text-left hover:no-underline [&>svg]:hidden">
+                  <div className="flex items-center gap-2">
+                    <DialogTitle className="text-xl font-semibold leading-tight">
+                      {editDialog.row?.pengajuan_judul ?? "Detail Pengadaan"}
+                    </DialogTitle>
+                    <ChevronDown className="h-5 w-5 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+                  </div>
+
+                  {editDialog.row && (
+                    <div className="flex flex-wrap gap-2">
+                      {(() => {
+                        const pillClass =
+                          "inline-flex items-center rounded-full border border-muted-foreground/20 bg-muted/20 px-3 py-0.5 text-[11px] font-medium";
+                        const memoLabel =
+                          editDialog.row?.pengajuan_no_surat ?? "-";
+                        const formLabel =
+                          editDialog.row?.form_evaluasi_kode ??
+                          editDialog.row?.kode_form ??
+                          "-";
+                        const renderPill = (label: string) =>
+                          editDialog.row?.pengajuan_lampiran_url ? (
+                            <a
+                              href={editDialog.row.pengajuan_lampiran_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className={cn(
+                                pillClass,
+                                "text-primary hover:bg-primary/10"
+                              )}
+                            >
+                              {label}
+                            </a>
+                          ) : (
+                            <span className={cn(pillClass, "text-foreground/70")}>
+                              {label}
+                            </span>
+                          );
+                        return (
+                          <>
+                            {renderPill(memoLabel)}
+                            {renderPill(formLabel)}
+                          </>
+                        );
+                      })()}
+                    </div>
+                  )}
+                </AccordionTrigger>
+
+                {editDialog.row && (
+                  <AccordionContent className="pt-4">
+                    <div className="grid gap-3 text-sm md:grid-cols-[0.75fr_1.25fr]">
+                      <div className="space-y-3 rounded-lg border px-2 py-2 md:px-3">
+                        <div className="space-y-1.5">
+                          <p className="text-xs text-muted-foreground">
+                            Nilai Project
+                          </p>
+                          <div className="text-foreground">
+                            <p className="text-sm font-semibold">
+                              {formatNumberId(
+                                editDialog.row.form_evaluasi_anggaran_hps
+                              )}
+                            </p>
+                            {(() => {
+                              const hps =
+                                editDialog.row.form_evaluasi_anggaran_hps;
+                              const nilai =
+                                editDialog.row.pengajuan_nilai_pengajuan;
+                              if (hps == null || nilai == null) return null;
+                              const diffPercent =
+                                hps !== 0 ? ((hps - nilai) / hps) * 100 : 0;
+                              const isHpsHigher = nilai >= hps;
+                              const diffClass =
+                                diffPercent === 0
+                                  ? "text-muted-foreground"
+                                  : isHpsHigher
+                                  ? "text-emerald-600"
+                                  : "text-red-600";
+                              return (
+                                <p className={cn("text-xs", diffClass)}>
+                                  {formatNumberId(nilai)}{" "}
+                                  <span>
+                                    (
+                                    {diffPercent === 0
+                                      ? "0.0%"
+                                      : `${
+                                          diffPercent > 0 ? "+" : ""
+                                        }${diffPercent.toFixed(1)}%`}
+                                    )
+                                  </span>
+                                </p>
+                              );
+                            })()}
+                          </div>
+                        </div>
+                        <div className="space-y-1.5">
+                          <p className="text-xs text-muted-foreground">
+                            Jenis Pengadaan
+                          </p>
+                          <p className="text-foreground">
+                            {editDialog.row.pengajuan_jenis ?? "-"}
+                          </p>
+                        </div>
+                        <div className="space-y-1.5">
+                          <p className="text-xs text-muted-foreground">
+                            Bagian / Unit
+                          </p>
+                          <p className="text-foreground">
+                            {editDialog.row.pengajuan_unit ?? "-"}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="space-y-2 rounded-lg border px-2 py-2 md:px-3">
+                        <p className="text-xs text-muted-foreground">
+                          Timeline Dokumen
+                        </p>
+                        <div className>
+                          {[
+                            {
+                              label: "Pengajuan Masuk",
+                              date: editDialog.row.pengajuan_tanggal,
+                              helper:
+                                editDialog.row.pengajuan_no_surat ?? undefined,
+                            },
+                            {
+                              label: "Form Evaluasi Dibuat",
+                              date: editDialog.row.form_evaluasi_created_at,
+                              helper:
+                                editDialog.row.form_evaluasi_kode ??
+                                editDialog.row.kode_form ??
+                                undefined,
+                            },
+                            {
+                              label: "Masuk Pengadaan",
+                              date: editDialog.row.created_at,
+                            },
+                          ]
+                            .filter((item) => item.date)
+                            .map((item, idx, arr) => {
+                              const isLast = idx === arr.length - 1;
+                              return (
+                                <div
+                                  key={`${item.label}-${idx}`}
+                                  className="flex gap-3 text-xs"
+                                >
+                                  <div className="flex w-6 flex-col items-center">
+                                    <span className="mt-1 h-2 w-2 rounded-full bg-primary/70" />
+                                    {!isLast && (
+                                      <span className="w-px flex-1 bg-primary/30" />
+                                    )}
+                                  </div>
+                                  <div
+                                    className={cn(
+                                      "flex-1 pt-0.5 ",
+                                      !isLast && "pb-3"
+                                    )}
+                                  >
+                                    <p className="font-medium text-foreground">
+                                      {item.label}
+                                    </p>
+                                    <p className="text-muted-foreground">
+                                      {formatDate(item.date ?? null)}
+                                      {item.helper ? ` · ${item.helper}` : ""}
+                                    </p>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                        </div>
+                      </div>
+                    </div>
+                  </AccordionContent>
+                )}
+              </AccordionItem>
+            </Accordion>
+          </DialogHeader>
+
+          {editDialog.row && (
+            <div className="space-y-6">
+              <section className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
+                    <div>
+                      <p className="text-base font-semibold text-foreground">
+                        Proses Pengadaan
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Mengikuti template tahapan dari metode terpilih
+                      </p>
+                    </div>
+                    {isProgressLoading && (
+                      <p className="text-xs text-muted-foreground">
+                        Memuat tahapan...
+                      </p>
+                    )}
+                  </div>
+                  <div className="max-w-sm">
+                    <Label
+                      htmlFor="metode_pengadaan_stepper"
+                      className="text-xs uppercase text-muted-foreground"
+                    >
+                      Metode Pengadaan
+                    </Label>
+                    {metodeChoices.length > 0 ? (
+                      <Select
+                        value={editForm.metodeId}
+                        onValueChange={(value) => {
+                          setEditForm((prev) => ({ ...prev, metodeId: value }));
+                          setTahapanDirty(false);
+                          setTahapanForm([]);
+                        }}
+                      >
+                        <SelectTrigger
+                          id="metode_pengadaan_stepper"
+                          className="mt-1"
+                        >
+                          <SelectValue placeholder="Pilih metode pengadaan" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {metodeChoices.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Belum ada pilihan metode tersedia.
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {isProgressLoading ? (
+                  <div className="rounded-lg border border-dashed p-4 text-muted-foreground">
+                    Memuat struktur tahapan dari Supabase...
+                  </div>
+                ) : templateTahapan && templateTahapan.length > 0 ? (
+                  <div className="space-y-4">
+                    {tahapanForm.map((tahap, index) => {
+                      const isDone = Boolean(tahap.tanggal);
+                      return (
+                        <div key={tahap.templateId} className="flex gap-4">
+                          <div className="flex flex-col items-center">
+                            <span
+                              className={cn(
+                                "flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold",
+                                isDone
+                                  ? "bg-emerald-500 text-white"
+                                  : "bg-muted text-foreground"
+                              )}
+                            >
+                              {index + 1}
+                            </span>
+                            {index < tahapanForm.length - 1 && (
+                              <span className="h-full w-px bg-border" />
+                            )}
+                          </div>
+                          <div className="flex-1 space-y-3 rounded-lg border p-4">
+                            <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
+                              <div>
+                                <p className="text-sm font-medium text-foreground">
+                                  {tahap.namaTahap}
+                                </p>
+                                {tahap.deskripsi && (
+                                  <p className="text-xs text-muted-foreground">
+                                    {tahap.deskripsi}
+                                  </p>
+                                )}
+                              </div>
+                              <Badge
+                                variant={isDone ? "secondary" : "outline"}
+                                className={
+                                  isDone
+                                    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                                    : undefined
+                                }
+                              >
+                                {isDone
+                                  ? `Selesai ${formatDate(tahap.tanggal)}`
+                                  : "Belum dimulai"}
+                              </Badge>
+                            </div>
+                            <div className="grid gap-3 md:grid-cols-2">
+                              <div className="space-y-1.5">
+                                <Label htmlFor={`tanggal_${tahap.templateId}`}>
+                                  Tanggal progres
+                                </Label>
+                                <Input
+                                  id={`tanggal_${tahap.templateId}`}
+                                  type="date"
+                                  value={tahap.tanggal}
+                                  onChange={(event) =>
+                                    updateTahapanValue(
+                                      tahap.templateId,
+                                      "tanggal",
+                                      event.target.value
+                                    )
+                                  }
+                                />
+                              </div>
+                              <div className="space-y-1.5">
+                                <Label htmlFor={`catatan_${tahap.templateId}`}>
+                                  Catatan
+                                </Label>
+                                <Textarea
+                                  id={`catatan_${tahap.templateId}`}
+                                  rows={2}
+                                  value={tahap.catatan}
+                                  placeholder="Tambahkan catatan progres"
+                                  onChange={(event) =>
+                                    updateTahapanValue(
+                                      tahap.templateId,
+                                      "catatan",
+                                      event.target.value
+                                    )
+                                  }
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="rounded-lg border border-dashed p-4 text-muted-foreground">
+                    Template tahapan belum tersedia untuk metode ini. Silakan
+                    pilih metode berbeda atau tambahkan template di Supabase.
+                  </div>
+                )}
+              </section>
+            </div>
+          )}
+
+          <DialogFooter className="gap-2 sm:gap-3">
+            <Button
+              variant="ghost"
+              onClick={() => handleDialogOpenChange(false)}
+            >
+              Batal
+            </Button>
+            <Button
+              onClick={handleSaveProgress}
+              disabled={!canSubmit || isSaving || metodeChoices.length === 0}
+            >
+              {isSaving ? "Menyimpan..." : "Simpan perubahan"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

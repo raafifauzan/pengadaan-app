@@ -353,7 +353,7 @@ export default function FormEvaluasi() {
 
       <div className="bg-card rounded-lg border overflow-x-auto">
         <div className="min-w-[900px]">
-          <Table>
+          <Table className="w-full">
             <TableHeader>
               <TableRow>
                 {EVALUATION_TABLE_COLUMNS.map((column) => {
@@ -399,7 +399,7 @@ export default function FormEvaluasi() {
                   <TableRow
                     key={evaluation.id}
                     onClick={() => handleDetail(evaluation)}
-                    className="cursor-pointer hover:bg-muted/50"
+                    className="cursor-pointer border-b hover:bg-muted/50"
                   >
                     {EVALUATION_TABLE_COLUMNS.map((column) => {
                       const alignClass = column.align ?? "";

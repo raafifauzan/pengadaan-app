@@ -105,7 +105,7 @@ export const EVALUATION_TABLE_COLUMNS: TableColumnConfig<EvaluationColumnKey>[] 
   [
     {
       key: "created_at",
-      label: "Tanggal Masuk Form",
+      label: "Tanggal Evaluator",
       basis: 150,
       minWidth: 140,
       align: "text-left",
@@ -118,7 +118,7 @@ export const EVALUATION_TABLE_COLUMNS: TableColumnConfig<EvaluationColumnKey>[] 
     {
       key: "judul",
       label: "Paket Pengajuan",
-      basis: 320,
+      basis: 300,
       minWidth: 280,
       align: "text-left",
       justify: "justify-start",
@@ -166,6 +166,83 @@ export const EVALUATION_TABLE_COLUMNS: TableColumnConfig<EvaluationColumnKey>[] 
       cellPadding: "px-4",
     },
   ];
+
+export type PengadaanColumnKey =
+  | "tanggal_pengajuan"
+  | "paket_pengajuan"
+  | "hps"
+  | "jenis"
+  | "metode"
+  | "status_aksi";
+
+export const PENGADAAN_TABLE_COLUMNS: TableColumnConfig<PengadaanColumnKey>[] = [
+  {
+    key: "tanggal_pengajuan",
+    label: "Tgl Pengadaan",
+    basis: 120,
+    minWidth: 120,
+    align: "text-left",
+    justify: "justify-start",
+    headPadding: "px-6",
+    cellPadding: "px-6",
+    sortable: true,
+    sortKey: "pengajuan_tanggal",
+  },
+  {
+    key: "paket_pengajuan",
+    label: "Paket Pengajuan",
+    basis: 260,
+    minWidth: 250,
+    align: "text-left",
+    justify: "justify-start",
+    headPadding: "px-2",
+    cellPadding: "px-2",
+    sortable: true,
+    sortKey: "pengajuan_judul",
+  },
+  {
+    key: "hps",
+    label: "Nilai Project",
+    basis: 120,
+    align: "text-right",
+    justify: "justify-end",
+    headPadding: "px-5",
+    cellPadding: "px-8",
+    sortable: true,
+    sortKey: "form_evaluasi_anggaran_hps",
+  },
+  {
+    key: "jenis",
+    label: "Jenis",
+    basis: 90,
+    align: "text-left",
+    justify: "justify-start",
+    headPadding: "px-5",
+    cellPadding: "px-5",
+    sortable: true,
+    sortKey: "pengajuan_jenis",
+  },
+  {
+    key: "metode",
+    label: "Metode",
+    basis: 150,
+    align: "text-left",
+    justify: "justify-start",
+    headPadding: "px-2",
+    cellPadding: "px-2",
+    sortable: true,
+    sortKey: "metode_nama",
+  },
+  {
+    key: "status_aksi",
+    label: "Status",
+    basis: 160,
+    align: "text-left",
+    justify: "justify-start",
+    headPadding: "px-2",
+    cellPadding: "px-2",
+  },
+];
 
 export const TABLE_LAYOUT = {
   rowGap: "gap-2.5",

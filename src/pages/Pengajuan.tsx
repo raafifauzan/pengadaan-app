@@ -26,7 +26,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProcurementFilterBar } from "@/components/ProcurementFilterBar";
 
 type ProcurementStatus = "pending" | "approved" | "rejected" | "in_progress" | "completed";
@@ -673,82 +672,82 @@ export default function Pengajuan() {
             <DialogTitle>Detail Pengajuan</DialogTitle>
           </DialogHeader>
           {detailDialog.data && (
-            <Card>
-              <CardContent className="pt-6 space-y-5 text-sm">
-                <div className="grid gap-3 md:grid-cols-2">
-                  <div className="space-y-1.5">
-                    <p className="text-xs text-muted-foreground">No Surat</p>
-                    <p className="text-sm text-foreground">{detailDialog.data.no_surat || "-"}</p>
-                  </div>
-                  <div className="space-y-1.5">
-                    <p className="text-xs text-muted-foreground">Status</p>
-                    <StatusBadge status={normalizeStatus(detailDialog.data.status) || "pending"} />
-                  </div>
+            <div className="space-y-5 text-sm">
+              <div className="grid gap-3 md:grid-cols-2">
+                <div className="space-y-1.5">
+                  <p className="text-xs text-muted-foreground">No Surat</p>
+                  <p className="text-sm text-foreground">{detailDialog.data.no_surat || "-"}</p>
+                </div>
+                <div className="space-y-1.5">
+                  <p className="text-xs text-muted-foreground">Status</p>
+                  <StatusBadge status={normalizeStatus(detailDialog.data.status) || "pending"} />
+                </div>
+                <div className="space-y-1.5 md:col-span-2">
+                  <p className="text-xs text-muted-foreground">Judul</p>
+                  <p className="text-sm text-foreground">{detailDialog.data.judul || "-"}</p>
+                </div>
+                <div className="space-y-1.5">
+                  <p className="text-xs text-muted-foreground">Bagian/Unit</p>
+                  <p className="text-sm text-foreground">{detailDialog.data.unit || "-"}</p>
+                </div>
+                <div className="space-y-1.5">
+                  <p className="text-xs text-muted-foreground">Jenis</p>
+                  <p className="text-sm text-foreground">{detailDialog.data.jenis || "-"}</p>
+                </div>
+                <div className="space-y-1.5">
+                  <p className="text-xs text-muted-foreground">Nilai Pengajuan</p>
+                  <p className="text-sm text-primary">{formatCurrency(detailDialog.data.nilai_pengajuan)}</p>
+                </div>
+                <div className="space-y-1.5">
+                  <p className="text-xs text-muted-foreground">Tanggal Surat</p>
+                  <p className="text-sm text-foreground">
+                    {detailDialog.data.tgl_surat
+                      ? new Date(detailDialog.data.tgl_surat).toLocaleDateString("id-ID")
+                      : "-"}
+                  </p>
+                </div>
+                {detailDialog.data.email && (
                   <div className="space-y-1.5 md:col-span-2">
-                    <p className="text-xs text-muted-foreground">Judul</p>
-                    <p className="text-sm text-foreground">{detailDialog.data.judul || "-"}</p>
+                    <p className="text-xs text-muted-foreground">Email Pengaju</p>
+                    <p className="text-sm text-foreground">{detailDialog.data.email}</p>
                   </div>
-                  <div className="space-y-1.5">
-                    <p className="text-xs text-muted-foreground">Bagian/Unit</p>
-                    <p className="text-sm text-foreground">{detailDialog.data.unit || "-"}</p>
-                  </div>
-                  <div className="space-y-1.5">
-                    <p className="text-xs text-muted-foreground">Jenis</p>
-                    <p className="text-sm text-foreground">{detailDialog.data.jenis || "-"}</p>
-                  </div>
-                  <div className="space-y-1.5">
-                    <p className="text-xs text-muted-foreground">Nilai Pengajuan</p>
-                    <p className="text-sm text-primary">{formatCurrency(detailDialog.data.nilai_pengajuan)}</p>
-                  </div>
-                  <div className="space-y-1.5">
-                    <p className="text-xs text-muted-foreground">Tanggal Surat</p>
-                    <p className="text-sm text-foreground">
-                      {detailDialog.data.tgl_surat ? new Date(detailDialog.data.tgl_surat).toLocaleDateString("id-ID") : "-"}
-                    </p>
-                  </div>
-                  {detailDialog.data.email && (
-                    <div className="space-y-1.5 md:col-span-2">
-                      <p className="text-xs text-muted-foreground">Email Pengaju</p>
-                      <p className="text-sm text-foreground">{detailDialog.data.email}</p>
-                    </div>
-                  )}
-                  {detailDialog.data.catatan && (
-                    <div className="space-y-1.5 md:col-span-2">
-                      <p className="text-xs text-muted-foreground">Catatan</p>
-                      <p className="text-sm text-foreground">{detailDialog.data.catatan}</p>
-                    </div>
-                  )}
+                )}
+                {detailDialog.data.catatan && (
                   <div className="space-y-1.5 md:col-span-2">
-                    <p className="text-xs text-muted-foreground">Lampiran</p>
-                    <div>
-                      {detailDialog.data.lampiran_url ? (
-                        <Badge
-                          variant="outline"
-                          className="text-[11px] font-medium bg-white text-primary border-primary/20 px-1.5 py-0.5 transition-colors duration-150 hover:bg-primary/20 hover:text-primary hover:border-primary/30"
+                    <p className="text-xs text-muted-foreground">Catatan</p>
+                    <p className="text-sm text-foreground">{detailDialog.data.catatan}</p>
+                  </div>
+                )}
+                <div className="space-y-1.5 md:col-span-2">
+                  <p className="text-xs text-muted-foreground">Lampiran</p>
+                  <div>
+                    {detailDialog.data.lampiran_url ? (
+                      <Badge
+                        variant="outline"
+                        className="text-[11px] font-medium bg-white text-primary border-primary/20 px-1.5 py-0.5 transition-colors duration-150 hover:bg-primary/20 hover:text-primary hover:border-primary/30"
+                      >
+                        <a
+                          href={detailDialog.data.lampiran_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 no-underline text-primary"
                         >
-                          <a
-                            href={detailDialog.data.lampiran_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 no-underline text-primary"
-                          >
-                            <FileText className="h-3 w-3" />
-                            {detailDialog.data.no_surat || detailDialog.data.lampiran_url.split("/").pop()}
-                          </a>
-                        </Badge>
-                      ) : (
-                        <Badge
-                          variant="outline"
-                          className="text-[11px] font-medium bg-white text-muted-foreground border-muted/20 px-1.5 py-0.5"
-                        >
-                          Tidak ada lampiran
-                        </Badge>
-                      )}
-                    </div>
+                          <FileText className="h-3 w-3" />
+                          {detailDialog.data.no_surat || detailDialog.data.lampiran_url.split("/").pop()}
+                        </a>
+                      </Badge>
+                    ) : (
+                      <Badge
+                        variant="outline"
+                        className="text-[11px] font-medium bg-white text-muted-foreground border-muted/20 px-1.5 py-0.5"
+                      >
+                        Tidak ada lampiran
+                      </Badge>
+                    )}
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           )}
         </DialogContent>
       </Dialog>

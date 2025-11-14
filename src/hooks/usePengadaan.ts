@@ -16,10 +16,14 @@ export type PengadaanWithRelations = Pengadaan & {
   metode_nama?: string | null;
   form_evaluasi_kode?: string | null;
   form_evaluasi_anggaran_hps?: number | null;
+  form_evaluasi_created_at?: string | null;
   pengajuan_judul?: string | null;
   pengajuan_tanggal?: string | null;      // tgl_surat atau fallback timestamp
   pengajuan_lampiran_url?: string | null;
   pengajuan_jenis?: string | null;
+  pengajuan_nilai_pengajuan?: number | null;
+  pengajuan_unit?: string | null;
+  pengajuan_no_surat?: string | null;
 };
 
 export function usePengadaan() {
@@ -46,13 +50,17 @@ export function usePengadaan() {
             id,
             kode_form,
             anggaran_hps,
+            created_at,
             pengajuan (
               id,
               tgl_surat,
               timestamp,
               judul,
               lampiran_url,
-              jenis
+              jenis,
+              nilai_pengajuan,
+              unit,
+              no_surat
             )
           )
         `
@@ -78,10 +86,14 @@ export function usePengadaan() {
           metode_nama: row.metode_pengadaan?.nama_metode ?? null,
           form_evaluasi_kode: row.form_evaluasi?.kode_form ?? null,
           form_evaluasi_anggaran_hps: row.form_evaluasi?.anggaran_hps ?? null,
+          form_evaluasi_created_at: row.form_evaluasi?.created_at ?? null,
           pengajuan_judul: pengajuan?.judul ?? null,
           pengajuan_tanggal: tanggal,
           pengajuan_lampiran_url: pengajuan?.lampiran_url ?? null,
           pengajuan_jenis: pengajuan?.jenis ?? null,
+          pengajuan_nilai_pengajuan: pengajuan?.nilai_pengajuan ?? null,
+          pengajuan_unit: pengajuan?.unit ?? null,
+          pengajuan_no_surat: pengajuan?.no_surat ?? null,
         } as PengadaanWithRelations;
       });
     },
