@@ -222,21 +222,29 @@ export default function Pengadaan() {
   });
   const [tahapanForm, setTahapanForm] = useState<TahapanFormValue[]>([]);
   const [tahapanDirty, setTahapanDirty] = useState(false);
+  const [isSwitchingMetode, setIsSwitchingMetode] = useState(false);
+  const [lockedMetodeByPengadaan, setLockedMetodeByPengadaan] = useState<Record<string, boolean>>({});
   const [detailOpen, setDetailOpen] = useState(true);
 
   const selectedMetodeId =
     editDialog.open && editForm.metodeId ? editForm.metodeId : undefined;
   const selectedPengadaanId = editDialog.row?.id;
+  const metodeLocked =
+    (selectedPengadaanId && lockedMetodeByPengadaan[selectedPengadaanId]) ?? false;
+  const shouldLoadTahapan =
+    editDialog.open && metodeLocked && Boolean(selectedMetodeId);
+  const progressDisabled = !metodeLocked;
 
   const { data: templateTahapan, isLoading: isTemplateLoading } =
-    useTemplateTahapan(selectedMetodeId, editDialog.open);
+    useTemplateTahapan(selectedMetodeId, shouldLoadTahapan);
   const { data: existingTahapan, isLoading: isTahapLoading } =
-    useTahapPengadaan(selectedPengadaanId, editDialog.open);
+    useTahapPengadaan(selectedPengadaanId, shouldLoadTahapan);
 
   useEffect(() => {
     if (!editDialog.open) return;
     if (!templateTahapan) {
       setTahapanForm([]);
+      setIsSwitchingMetode(false);
       return;
     }
     if (tahapanDirty) return;
@@ -263,12 +271,14 @@ export default function Pengadaan() {
     );
 
     setTahapanForm(nextValues);
+    setIsSwitchingMetode(false);
   }, [templateTahapan, existingTahapan, editDialog.open, tahapanDirty]);
 
   useEffect(() => {
     if (!editDialog.open) {
       setTahapanForm([]);
       setTahapanDirty(false);
+      setIsSwitchingMetode(false);
       setDetailOpen(true);
     }
   }, [editDialog.open]);
@@ -377,12 +387,14 @@ export default function Pengadaan() {
     });
     setTahapanDirty(false);
     setTahapanForm([]);
+    setIsSwitchingMetode(false);
   };
 
   const closeProgressDialog = () => {
     setEditDialog({ open: false, row: null });
     setTahapanForm([]);
     setTahapanDirty(false);
+    setIsSwitchingMetode(false);
   };
 
   const handleDialogOpenChange = (open: boolean) => {
@@ -391,9 +403,24 @@ export default function Pengadaan() {
     }
   };
 
+  const handleLockMetode = () => {
+    if (!editDialog.row || !editForm.metodeId || metodeLocked) return;
+    setLockedMetodeByPengadaan((prev) => ({
+      ...prev,
+      [editDialog.row!.id]: true,
+    }));
+    setIsSwitchingMetode(true);
+    toast({
+      title: "Metode ditetapkan",
+      description: "Metode pengadaan dikunci untuk pengadaan ini.",
+    });
+  };
+
   const canSubmit = Boolean(editForm.status && editForm.metodeId);
   const isProgressLoading =
-    editDialog.open && (isTemplateLoading || isTahapLoading);
+    shouldLoadTahapan && (isTemplateLoading || isTahapLoading);
+  const isProgressTransition =
+    shouldLoadTahapan && (isProgressLoading || isSwitchingMetode);
   const isSaving = isUpdating || isSavingTahapan;
   const currentRowStatus = normalizeProcurementStatus(
     editDialog.row?.status_pengadaan
@@ -709,15 +736,18 @@ export default function Pengadaan() {
       )}
 
       <Dialog open={editDialog.open} onOpenChange={handleDialogOpenChange}>
-        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto space-y-6 text-sm">
-          <DialogHeader>
+        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto text-sm">
+          <DialogHeader className="border-none !border-0 pb-0 space-y-0 text-left sm:text-left mt-0 mx-0 px-0 !mt-0 !mx-0 !px-0">
             <Accordion
               type="single"
               collapsible
               defaultValue="detail"
               className="w-auto"
             >
-              <AccordionItem value="detail" className="border-none">
+              <AccordionItem
+                value="detail"
+                className="border-none !border-0 !border-b-0 data-[state=open]:border-none data-[state=open]:!border-0 data-[state=open]:!border-b-0"
+              >
                 <AccordionTrigger className="group flex flex-col items-start gap-2 py-0 text-left hover:no-underline [&>svg]:hidden">
                   <div className="flex items-center gap-2">
                     <DialogTitle className="text-xl font-semibold leading-tight">
@@ -898,64 +928,79 @@ export default function Pengadaan() {
             <div className="space-y-6">
               <section className="space-y-4">
                 <div className="space-y-2">
-                  <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
-                    <div>
-                      <p className="text-base font-semibold text-foreground">
-                        Proses Pengadaan
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Mengikuti template tahapan dari metode terpilih
-                      </p>
-                    </div>
-                    {isProgressLoading && (
-                      <p className="text-xs text-muted-foreground">
-                        Memuat tahapan...
-                      </p>
-                    )}
-                  </div>
-                  <div className="max-w-sm">
+                  {shouldLoadTahapan && isProgressTransition && (
+                    <span
+                      aria-label="Memuat tahapan"
+                      className="mt-1 h-3 w-24 rounded bg-muted/80 animate-pulse md:mt-0"
+                    />
+                  )}
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
                     <Label
                       htmlFor="metode_pengadaan_stepper"
-                      className="text-xs uppercase text-muted-foreground"
+                      className="text-xs font-semibold uppercase text-muted-foreground sm:w-30"
                     >
                       Metode Pengadaan
                     </Label>
                     {metodeChoices.length > 0 ? (
-                      <Select
-                        value={editForm.metodeId}
-                        onValueChange={(value) => {
-                          setEditForm((prev) => ({ ...prev, metodeId: value }));
-                          setTahapanDirty(false);
-                          setTahapanForm([]);
-                        }}
-                      >
-                        <SelectTrigger
-                          id="metode_pengadaan_stepper"
-                          className="mt-1"
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2">
+                        <Select
+                          value={editForm.metodeId}
+                          disabled={metodeLocked}
+                          onValueChange={(value) => {
+                            setEditForm((prev) => ({ ...prev, metodeId: value }));
+                            setTahapanDirty(false);
+                            setTahapanForm([]);
+                            setIsSwitchingMetode(false);
+                          }}
                         >
-                          <SelectValue placeholder="Pilih metode pengadaan" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {metodeChoices.map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                          <SelectTrigger
+                            id="metode_pengadaan_stepper"
+                            className="w-auto sm:w-48 sm:pr-2"
+                          >
+                            <SelectValue placeholder="Pilih metode pengadaan" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {metodeChoices.map((option) => (
+                              <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Button
+                          size="sm"
+                          variant={metodeLocked ? "secondary" : "default"}
+                          className="sm:min-w-[110px]"
+                          disabled={metodeLocked || !editForm.metodeId}
+                          onClick={handleLockMetode}
+                        >
+                          {metodeLocked ? "Sudah Ditetapkan" : "Tetapkan Metode"}
+                        </Button>
+                      </div>
                     ) : (
-                      <p className="mt-1 text-sm text-muted-foreground">
+                      <p className="text-sm text-muted-foreground">
                         Belum ada pilihan metode tersedia.
                       </p>
                     )}
                   </div>
                 </div>
 
-                {isProgressLoading ? (
-                  <div className="rounded-lg border border-dashed p-4 text-muted-foreground">
-                    Memuat struktur tahapan dari Supabase...
+                {progressDisabled && (
+                  <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                    Tetapkan metode pengadaan terlebih dahulu sebelum mengisi progres.
                   </div>
-                ) : templateTahapan && templateTahapan.length > 0 ? (
+                )}
+                {shouldLoadTahapan && isProgressTransition ? (
+                  <div className="space-y-4">
+                    {Array.from({ length: 3 }).map((_, index) => (
+                      <div key={index} className="space-y-2 rounded-lg border border-dashed p-4">
+                        <div className="h-4 w-40 animate-pulse rounded bg-muted" />
+                        <div className="h-3 w-full animate-pulse rounded bg-muted/70" />
+                        <div className="h-3 w-3/4 animate-pulse rounded bg-muted/60" />
+                      </div>
+                    ))}
+                  </div>
+                ) : shouldLoadTahapan && templateTahapan && templateTahapan.length > 0 ? (
                   <div className="space-y-4">
                     {tahapanForm.map((tahap, index) => {
                       const isDone = Boolean(tahap.tanggal);
@@ -1010,6 +1055,7 @@ export default function Pengadaan() {
                                   id={`tanggal_${tahap.templateId}`}
                                   type="date"
                                   value={tahap.tanggal}
+                                  disabled={progressDisabled}
                                   onChange={(event) =>
                                     updateTahapanValue(
                                       tahap.templateId,
@@ -1028,6 +1074,7 @@ export default function Pengadaan() {
                                   rows={2}
                                   value={tahap.catatan}
                                   placeholder="Tambahkan catatan progres"
+                                  disabled={progressDisabled}
                                   onChange={(event) =>
                                     updateTahapanValue(
                                       tahap.templateId,
@@ -1043,12 +1090,7 @@ export default function Pengadaan() {
                       );
                     })}
                   </div>
-                ) : (
-                  <div className="rounded-lg border border-dashed p-4 text-muted-foreground">
-                    Template tahapan belum tersedia untuk metode ini. Silakan
-                    pilih metode berbeda atau tambahkan template di Supabase.
-                  </div>
-                )}
+                ) : null}
               </section>
             </div>
           )}

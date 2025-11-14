@@ -5,7 +5,7 @@ import type { TrackingStep } from "@/components/TrackingProgressBar";
 
 type Pengajuan = Tables<"pengajuan">;
 type FormEvaluasiRow = Tables<"form_evaluasi">;
-type PengadaanRow = Tables<"Pengadaan">;
+type PengadaanRow = Tables<"pengadaan">;
 
 export interface TrackingItem {
   id: string;
@@ -76,7 +76,7 @@ const determineCurrentStep = (
   pengadaan?: PengadaanRow
 ): { step: TrackingStep; rejected: boolean } => {
   if (pengadaan) {
-    return { step: mapPengadaanStatusToStep(pengadaan["STATUS"]), rejected: false };
+    return { step: mapPengadaanStatusToStep(pengadaan.status_pengadaan), rejected: false };
   }
   if (evaluasi) {
     return { step: evaluasi.is_final ? "kelengkapan_evaluasi" : "form_evaluasi", rejected: false };
@@ -90,9 +90,14 @@ export function useTracking() {
     queryKey: ["tracking"],
     queryFn: async (): Promise<TrackingItem[]> => {
       const [pengajuanRes, evaluasiRes, pengadaanRes] = await Promise.all([
-        supabase.from("pengajuan").select("*").order("timestamp", { ascending: false }),
-        supabase.from("form_evaluasi").select("*"),
-        supabase.from("Pengadaan").select("*"),
+        supabase
+          .from("pengajuan")
+          .select(
+            "id, judul, status, timestamp, tgl_surat, nilai_pengajuan, unit, no_surat, lampiran_url"
+          )
+          .order("timestamp", { ascending: false }),
+        supabase.from("form_evaluasi").select("id, pengajuan_id, kode_form, is_final"),
+        supabase.from("pengadaan").select("id, kode_form, form_evaluasi_id, status_pengadaan"),
       ]);
 
       if (pengajuanRes.error) throw pengajuanRes.error;
@@ -106,11 +111,14 @@ export function useTracking() {
         }
       });
 
-      const pengadaanMap = new Map<string, PengadaanRow>();
+      const pengadaanByKode = new Map<string, PengadaanRow>();
+      const pengadaanByFormEvaluasi = new Map<string, PengadaanRow>();
       (pengadaanRes.data ?? []).forEach((row) => {
-        const key = row["NOMOR PENGAJUAN / FROM EVALUASI"];
-        if (key) {
-          pengadaanMap.set(String(key), row);
+        if (row.kode_form) {
+          pengadaanByKode.set(row.kode_form, row);
+        }
+        if (row.form_evaluasi_id) {
+          pengadaanByFormEvaluasi.set(row.form_evaluasi_id, row);
         }
       });
 
@@ -118,9 +126,8 @@ export function useTracking() {
         const evaluasiRecord = evaluasiMap.get(p.id);
         const kodeForm = evaluasiRecord?.kode_form;
         const pengadaanRecord =
-          (kodeForm && pengadaanMap.get(kodeForm)) ||
-          pengadaanMap.get(p.id) ||
-          (p.no_surat ? pengadaanMap.get(p.no_surat) : undefined);
+          (kodeForm && pengadaanByKode.get(kodeForm)) ||
+          (evaluasiRecord?.id && pengadaanByFormEvaluasi.get(evaluasiRecord.id));
 
         const { step, rejected } = determineCurrentStep(p, evaluasiRecord, pengadaanRecord);
 
