@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Settings, PenLine, ChevronDown } from "lucide-react";
+import { Settings, PenLine, ChevronDown, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -137,6 +137,7 @@ export default function Pengadaan() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterMetode, setFilterMetode] = useState<string>("all");
+  const [filterUnit, setFilterUnit] = useState<string>("all");
   const [nilaiFilter, setNilaiFilter] = useState<[number, number]>([0, 0]); // belum dipakai
   const [currentPage, setCurrentPage] = useState(1);
   const [sortConfig, setSortConfig] = useState<{
@@ -147,8 +148,40 @@ export default function Pengadaan() {
 
   const itemsPerPage = 10;
 
-  // sementara masih dummy (belum dipakai untuk filter slider)
-  const nilaiRange = useMemo(() => ({ min: 0, max: 0 }), []);
+  const nilaiRange = useMemo(() => {
+    if (!pengadaanData || pengadaanData.length === 0) {
+      return { min: 0, max: 0 };
+    }
+    const values = (pengadaanData as PengadaanWithRelations[])
+      .map((item) => {
+        const hps = item.form_evaluasi_anggaran_hps;
+        const nilai = item.pengajuan_nilai_pengajuan;
+        return hps ?? nilai ?? null;
+      })
+      .filter((value): value is number => typeof value === "number" && !Number.isNaN(value));
+
+    if (values.length === 0) {
+      return { min: 0, max: 0 };
+    }
+
+    const min = Math.min(...values);
+    const rawMax = Math.max(...values);
+    const max = rawMax === min ? min + 1 : rawMax;
+    return { min, max };
+  }, [pengadaanData]);
+
+  useEffect(() => {
+    if (nilaiRange.min === 0 && nilaiRange.max === 0) return;
+    setNilaiFilter((prev) => {
+      const [prevMin, prevMax] = prev;
+      if (prevMin === 0 && prevMax === 0) {
+        return [nilaiRange.min, nilaiRange.max];
+      }
+      const clampedMin = Math.max(prevMin, nilaiRange.min);
+      const clampedMax = Math.min(prevMax, nilaiRange.max);
+      return [clampedMin, clampedMax];
+    });
+  }, [nilaiRange.min, nilaiRange.max]);
 
   const statusOptions = useMemo(() => {
     const set = new Set<string>();
@@ -176,6 +209,22 @@ export default function Pengadaan() {
 
     return [
       { value: "all", label: "Semua Metode" },
+      ...Array.from(set).map((value) => ({
+        value,
+        label: value,
+      })),
+    ];
+  }, [pengadaanData]);
+
+  const unitOptions = useMemo(() => {
+    const set = new Set<string>();
+    (pengadaanData ?? []).forEach((item) => {
+      const unit = item.pengajuan_unit?.trim();
+      if (unit) set.add(unit);
+    });
+
+    return [
+      { value: "all", label: "Semua Unit" },
       ...Array.from(set).map((value) => ({
         value,
         label: value,
@@ -225,6 +274,7 @@ export default function Pengadaan() {
   const [isSwitchingMetode, setIsSwitchingMetode] = useState(false);
   const [lockedMetodeByPengadaan, setLockedMetodeByPengadaan] = useState<Record<string, boolean>>({});
   const [detailOpen, setDetailOpen] = useState(true);
+  const [selectedTahapId, setSelectedTahapId] = useState<string | null>(null);
 
   const selectedMetodeId =
     editDialog.open && editForm.metodeId ? editForm.metodeId : undefined;
@@ -275,13 +325,17 @@ export default function Pengadaan() {
   }, [templateTahapan, existingTahapan, editDialog.open, tahapanDirty]);
 
   useEffect(() => {
-    if (!editDialog.open) {
-      setTahapanForm([]);
-      setTahapanDirty(false);
-      setIsSwitchingMetode(false);
-      setDetailOpen(true);
+    if (tahapanForm.length === 0) {
+      setSelectedTahapId(null);
+      return;
     }
-  }, [editDialog.open]);
+    if (selectedTahapId && tahapanForm.some((t) => t.templateId === selectedTahapId)) {
+      return;
+    }
+    const firstIncomplete = tahapanForm.find((t) => !t.tanggal);
+    const fallback = firstIncomplete ?? tahapanForm[tahapanForm.length - 1];
+    setSelectedTahapId(fallback.templateId);
+  }, [tahapanForm, selectedTahapId]);
 
   const handleSort = (col: TableColumnConfig<PengadaanColumnKey>) => {
     if (!col.sortable) return;
@@ -318,6 +372,11 @@ export default function Pengadaan() {
         filterMetode === "all" ||
         metodeLabel.toLowerCase() === filterMetode.toLowerCase();
 
+      const unitLabel = (item.pengajuan_unit ?? "").trim();
+      const matchesUnit =
+        filterUnit === "all" ||
+        unitLabel.toLowerCase() === filterUnit.toLowerCase();
+
       const search = searchQuery.toLowerCase();
       const matchesSearch =
         (item.pengajuan_judul ?? "").toLowerCase().includes(search) ||
@@ -325,7 +384,7 @@ export default function Pengadaan() {
         (item.pengajuan_jenis ?? "").toLowerCase().includes(search) ||
         metodeLabel.toLowerCase().includes(search);
 
-      return matchesStatus && matchesMetode && matchesSearch;
+      return matchesStatus && matchesMetode && matchesUnit && matchesSearch;
     });
 
     if (sortConfig) {
@@ -358,7 +417,7 @@ export default function Pengadaan() {
     }
 
     return result;
-  }, [pengadaanData, filterStatus, filterMetode, searchQuery, sortConfig]);
+  }, [pengadaanData, filterStatus, filterMetode, filterUnit, searchQuery, sortConfig]);
 
   const totalPages = Math.ceil(filteredPengadaan.length / itemsPerPage);
   const paginatedPengadaan = filteredPengadaan.slice(
@@ -395,6 +454,8 @@ export default function Pengadaan() {
     setTahapanForm([]);
     setTahapanDirty(false);
     setIsSwitchingMetode(false);
+    setDetailOpen(true);
+    setSelectedTahapId(null);
   };
 
   const handleDialogOpenChange = (open: boolean) => {
@@ -410,10 +471,7 @@ export default function Pengadaan() {
       [editDialog.row!.id]: true,
     }));
     setIsSwitchingMetode(true);
-    toast({
-      title: "Metode ditetapkan",
-      description: "Metode pengadaan dikunci untuk pengadaan ini.",
-    });
+    setDetailOpen(false);
   };
 
   const canSubmit = Boolean(editForm.status && editForm.metodeId);
@@ -668,6 +726,9 @@ export default function Pengadaan() {
         jenisOptions={metodeOptions}
         jenisValue={filterMetode}
         onJenisChange={setFilterMetode}
+        unitOptions={unitOptions}
+        unitValue={filterUnit}
+        onUnitChange={setFilterUnit}
         nilaiRange={[nilaiRange.min, nilaiRange.max]}
         nilaiValue={nilaiFilter}
         onNilaiChange={setNilaiFilter}
@@ -741,7 +802,8 @@ export default function Pengadaan() {
             <Accordion
               type="single"
               collapsible
-              defaultValue="detail"
+              value={detailOpen ? "detail" : undefined}
+              onValueChange={(value) => setDetailOpen(value === "detail")}
               className="w-auto"
             >
               <AccordionItem
@@ -990,6 +1052,90 @@ export default function Pengadaan() {
                     Tetapkan metode pengadaan terlebih dahulu sebelum mengisi progres.
                   </div>
                 )}
+                {shouldLoadTahapan && templateTahapan && templateTahapan.length > 0 && (
+                  <div className="space-y-3 rounded-xl border border-dashed px-4 py-4">
+                    <p className="text-sm font-semibold text-foreground">Ringkasan Tahapan</p>
+                    <div className="flex flex-wrap items-start gap-6">
+                      {(() => {
+                        const firstIncompleteIndex = tahapanForm.findIndex((t) => !t.tanggal);
+                        const maxUnlockedIndex =
+                          firstIncompleteIndex === -1 ? tahapanForm.length - 1 : firstIncompleteIndex;
+
+                        return tahapanForm.map((tahap, index) => {
+                          const canSelectStep = index <= maxUnlockedIndex;
+                          const isActive = tahap.templateId === selectedTahapId;
+                          const isDone = Boolean(tahap.tanggal);
+                          const statusLabel = isDone
+                            ? "Selesai"
+                            : isActive
+                            ? "Sedang berjalan"
+                            : canSelectStep
+                            ? "Menunggu"
+                            : "Terkunci";
+                          return (
+                            <div key={tahap.templateId} className="flex flex-col gap-1.5 text-left">
+                              <div className="flex items-center gap-4">
+                                <button
+                                  type="button"
+                                  className={cn(
+                                    "flex h-9 w-9 items-center justify-center rounded-full border-2 text-xs font-semibold transition-colors",
+                                    isDone
+                                      ? "border-emerald-500 bg-emerald-100 text-emerald-700"
+                                      : isActive
+                                      ? "border-primary bg-primary/10 text-primary"
+                                      : "border-muted bg-muted text-muted-foreground",
+                                    !canSelectStep && "cursor-not-allowed opacity-50",
+                                  )}
+                                  disabled={!canSelectStep}
+                                  onClick={() => {
+                                    if (!canSelectStep) return;
+                                    setSelectedTahapId(tahap.templateId);
+                                  }}
+                                >
+                                  {isDone ? <Check className="h-4 w-4" /> : index + 1}
+                                </button>
+                                {index < tahapanForm.length - 1 && (
+                                  <span
+                                    className={cn(
+                                      "hidden h-0.5 w-16 rounded-full sm:block",
+                                      isDone ? "bg-primary" : "bg-muted"
+                                    )}
+                                  />
+                                )}
+                              </div>
+                              <button
+                                type="button"
+                                className={cn(
+                                  "text-left text-xs transition-colors",
+                                  canSelectStep ? "hover:text-primary" : "cursor-not-allowed opacity-70"
+                                )}
+                                disabled={!canSelectStep}
+                                onClick={() => {
+                                  if (!canSelectStep) return;
+                                  setSelectedTahapId(tahap.templateId);
+                                }}
+                              >
+                                <p
+                                  className={cn(
+                                    "text-xs",
+                                    isActive ? "font-medium text-foreground" : "font-normal text-muted-foreground"
+                                  )}
+                                >
+                                  {tahap.namaTahap}
+                                </p>
+                                {isActive && (
+                                  <p className={cn("text-[11px]", isDone ? "text-emerald-600" : "text-primary")}>
+                                    {statusLabel}
+                                  </p>
+                                )}
+                              </button>
+                            </div>
+                          );
+                        });
+                      })()}
+                    </div>
+                  </div>
+                )}
                 {shouldLoadTahapan && isProgressTransition ? (
                   <div className="space-y-4">
                     {Array.from({ length: 3 }).map((_, index) => (
@@ -1000,95 +1146,63 @@ export default function Pengadaan() {
                       </div>
                     ))}
                   </div>
-                ) : shouldLoadTahapan && templateTahapan && templateTahapan.length > 0 ? (
+                ) : shouldLoadTahapan && templateTahapan && templateTahapan.length > 0 && selectedTahapId ? (
                   <div className="space-y-4">
-                    {tahapanForm.map((tahap, index) => {
+                    {(() => {
+                      const tahap = tahapanForm.find((t) => t.templateId === selectedTahapId);
+                      if (!tahap) return null;
+                      const index = tahapanForm.findIndex((t) => t.templateId === selectedTahapId);
                       const isDone = Boolean(tahap.tanggal);
                       return (
-                        <div key={tahap.templateId} className="flex gap-4">
-                          <div className="flex flex-col items-center">
-                            <span
-                              className={cn(
-                                "flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold",
-                                isDone
-                                  ? "bg-emerald-500 text-white"
-                                  : "bg-muted text-foreground"
+                        <div className="flex flex-col gap-4 rounded-lg border p-4">
+                          <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
+                            <div>
+                              <p className="text-sm font-medium text-foreground">
+                                Langkah {index + 1}: {tahap.namaTahap}
+                              </p>
+                              {tahap.deskripsi && (
+                                <p className="text-xs text-muted-foreground">{tahap.deskripsi}</p>
                               )}
-                            >
-                              {index + 1}
-                            </span>
-                            {index < tahapanForm.length - 1 && (
-                              <span className="h-full w-px bg-border" />
-                            )}
-                          </div>
-                          <div className="flex-1 space-y-3 rounded-lg border p-4">
-                            <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
-                              <div>
-                                <p className="text-sm font-medium text-foreground">
-                                  {tahap.namaTahap}
-                                </p>
-                                {tahap.deskripsi && (
-                                  <p className="text-xs text-muted-foreground">
-                                    {tahap.deskripsi}
-                                  </p>
-                                )}
-                              </div>
-                              <Badge
-                                variant={isDone ? "secondary" : "outline"}
-                                className={
-                                  isDone
-                                    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                                    : undefined
-                                }
-                              >
-                                {isDone
-                                  ? `Selesai ${formatDate(tahap.tanggal)}`
-                                  : "Belum dimulai"}
-                              </Badge>
                             </div>
-                            <div className="grid gap-3 md:grid-cols-2">
-                              <div className="space-y-1.5">
-                                <Label htmlFor={`tanggal_${tahap.templateId}`}>
-                                  Tanggal progres
-                                </Label>
-                                <Input
-                                  id={`tanggal_${tahap.templateId}`}
-                                  type="date"
-                                  value={tahap.tanggal}
-                                  disabled={progressDisabled}
-                                  onChange={(event) =>
-                                    updateTahapanValue(
-                                      tahap.templateId,
-                                      "tanggal",
-                                      event.target.value
-                                    )
-                                  }
-                                />
-                              </div>
-                              <div className="space-y-1.5">
-                                <Label htmlFor={`catatan_${tahap.templateId}`}>
-                                  Catatan
-                                </Label>
-                                <Textarea
-                                  id={`catatan_${tahap.templateId}`}
-                                  rows={2}
-                                  value={tahap.catatan}
-                                  placeholder="Tambahkan catatan progres"
-                                  disabled={progressDisabled}
-                                  onChange={(event) =>
-                                    updateTahapanValue(
-                                      tahap.templateId,
-                                      "catatan",
-                                      event.target.value
-                                    )
-                                  }
-                                />
-                              </div>
+                            <Badge
+                              variant={isDone ? "secondary" : "outline"}
+                              className={
+                                isDone ? "border-emerald-200 bg-emerald-50 text-emerald-700" : undefined
+                              }
+                            >
+                              {isDone ? `Selesai ${formatDate(tahap.tanggal)}` : "Belum dimulai"}
+                            </Badge>
+                          </div>
+                          <div className="grid gap-3 md:grid-cols-2">
+                            <div className="space-y-1.5">
+                              <Label htmlFor={`tanggal_${tahap.templateId}`}>Tanggal progres</Label>
+                              <Input
+                                id={`tanggal_${tahap.templateId}`}
+                                type="date"
+                                value={tahap.tanggal}
+                                disabled={progressDisabled}
+                                onChange={(event) =>
+                                  updateTahapanValue(tahap.templateId, "tanggal", event.target.value)
+                                }
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <Label htmlFor={`catatan_${tahap.templateId}`}>Catatan</Label>
+                              <Textarea
+                                id={`catatan_${tahap.templateId}`}
+                                rows={3}
+                                value={tahap.catatan}
+                                placeholder="Tambahkan catatan progres"
+                                disabled={progressDisabled}
+                                onChange={(event) =>
+                                  updateTahapanValue(tahap.templateId, "catatan", event.target.value)
+                                }
+                              />
                             </div>
                           </div>
                         </div>
                       );
-                    })}
+                    })()}
                   </div>
                 ) : null}
               </section>

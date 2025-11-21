@@ -210,6 +210,7 @@ export default function Pengajuan() {
   const [showForm, setShowForm] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterJenis, setFilterJenis] = useState<string>("all");
+  const [filterUnit, setFilterUnit] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [nilaiFilter, setNilaiFilter] = useState<[number, number]>([0, Number.MAX_SAFE_INTEGER]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -377,6 +378,14 @@ export default function Pengajuan() {
     return ["all", ...Array.from(set)];
   }, [pengajuanData]);
 
+  const unitOptions = useMemo(() => {
+    const set = new Set<string>();
+    (pengajuanData ?? mockRequests).forEach((item) => {
+      if (item.unit) set.add(item.unit);
+    });
+    return ["all", ...Array.from(set)];
+  }, [pengajuanData]);
+
   // Filter, sort and pagination logic
   const sortedAndFilteredRequests = useMemo(() => {
     if (!pengajuanData) return [];
@@ -388,13 +397,16 @@ export default function Pengajuan() {
       const matchesJenis =
         filterJenis === "all" ||
         (req.jenis?.toLowerCase() ?? "") === filterJenis.toLowerCase();
+      const matchesUnit =
+        filterUnit === "all" ||
+        (req.unit?.toLowerCase() ?? "") === filterUnit.toLowerCase();
       const matchesSearch =
         (req.no_surat?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false) ||
         (req.judul?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false);
       const nilai = req.nilai_pengajuan ?? 0;
       const matchesNilai =
         !isNilaiFilterActive || (nilai >= nilaiFilter[0] && nilai <= nilaiFilter[1]);
-      return matchesStatus && matchesJenis && matchesSearch && matchesNilai;
+      return matchesStatus && matchesJenis && matchesUnit && matchesSearch && matchesNilai;
     });
 
     if (sortConfig) {
@@ -419,7 +431,7 @@ export default function Pengajuan() {
     }
 
     return filtered;
-  }, [pengajuanData, filterJenis, filterStatus, nilaiFilter, searchQuery, sortConfig]);
+  }, [pengajuanData, filterJenis, filterStatus, filterUnit, nilaiFilter, searchQuery, sortConfig]);
 
   const totalPages = Math.ceil(sortedAndFilteredRequests.length / itemsPerPage);
   const paginatedRequests = sortedAndFilteredRequests.slice(
@@ -549,6 +561,12 @@ export default function Pengajuan() {
         }))}
         jenisValue={filterJenis}
         onJenisChange={setFilterJenis}
+        unitOptions={unitOptions.map((value) => ({
+          value,
+          label: value === "all" ? "Semua Unit" : value,
+        }))}
+        unitValue={filterUnit}
+        onUnitChange={setFilterUnit}
         nilaiRange={[nilaiRange.min, nilaiRange.max]}
         nilaiValue={nilaiFilter}
         onNilaiChange={setNilaiFilter}

@@ -98,6 +98,7 @@ export default function FormEvaluasi() {
 
   const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
   const [filterJenis, setFilterJenis] = useState<string>("all");
+  const [filterUnit, setFilterUnit] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [nilaiFilter, setNilaiFilter] = useState<[number, number]>([0, Number.MAX_SAFE_INTEGER]);
   const [sortConfig, setSortConfig] = useState<{ key: EvaluationColumnKey; direction: "asc" | "desc" } | null>(null);
@@ -136,12 +137,20 @@ export default function FormEvaluasi() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [filterStatus, filterJenis, searchQuery, nilaiMin, nilaiMax]);
+  }, [filterStatus, filterJenis, filterUnit, searchQuery, nilaiMin, nilaiMax]);
 
   const jenisOptions = useMemo(() => {
     const set = new Set<string>();
     evaluationList.forEach((record) => {
       if (record.pengajuan?.jenis) set.add(record.pengajuan.jenis);
+    });
+    return ["all", ...Array.from(set)];
+  }, [evaluationList]);
+
+  const unitOptions = useMemo(() => {
+    const set = new Set<string>();
+    evaluationList.forEach((record) => {
+      if (record.pengajuan?.unit) set.add(record.pengajuan.unit);
     });
     return ["all", ...Array.from(set)];
   }, [evaluationList]);
@@ -157,9 +166,12 @@ export default function FormEvaluasi() {
       const matchesJenis =
         filterJenis === "all" ||
         (record.pengajuan?.jenis?.toLowerCase() ?? "") === filterJenis.toLowerCase();
+      const matchesUnit =
+        filterUnit === "all" ||
+        (record.pengajuan?.unit?.toLowerCase() ?? "") === filterUnit.toLowerCase();
       const nilai = record.pengajuan?.nilai_pengajuan ?? 0;
       const matchesNilai = nilai >= nilaiMin && nilai <= nilaiMax;
-      return matchesStatus && matchesSearch && matchesJenis && matchesNilai;
+      return matchesStatus && matchesSearch && matchesJenis && matchesUnit && matchesNilai;
     });
 
     if (sortConfig) {
@@ -181,7 +193,7 @@ export default function FormEvaluasi() {
     }
 
     return filtered;
-  }, [evaluationList, filterStatus, filterJenis, searchQuery, nilaiMin, nilaiMax, sortConfig]);
+  }, [evaluationList, filterStatus, filterJenis, filterUnit, searchQuery, nilaiMin, nilaiMax, sortConfig]);
 
   const totalPages = Math.ceil(sortedAndFilteredEvaluations.length / itemsPerPage) || 1;
   const paginatedEvaluations = sortedAndFilteredEvaluations.slice(
@@ -346,6 +358,12 @@ export default function FormEvaluasi() {
         }))}
         jenisValue={filterJenis}
         onJenisChange={setFilterJenis}
+        unitOptions={unitOptions.map((value) => ({
+          value,
+          label: value === "all" ? "Semua Unit" : value,
+        }))}
+        unitValue={filterUnit}
+        onUnitChange={setFilterUnit}
         nilaiRange={[nilaiRange.min, nilaiRange.max]}
         nilaiValue={nilaiFilter}
         onNilaiChange={setNilaiFilter}

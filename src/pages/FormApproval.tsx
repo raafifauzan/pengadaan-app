@@ -111,6 +111,7 @@ export default function FormApproval() {
 
   const [filterStatus, setFilterStatus] = useState<"all" | "proses" | "selesai">("all");
   const [filterJenis, setFilterJenis] = useState<string>("all");
+  const [filterUnit, setFilterUnit] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [nilaiFilter, setNilaiFilter] = useState<[number, number]>([0, Number.MAX_SAFE_INTEGER]);
   const [sortConfig, setSortConfig] = useState<{ key: ProgresSortKey; direction: "asc" | "desc" } | null>(null);
@@ -155,6 +156,14 @@ export default function FormApproval() {
     return ["all", ...Array.from(set)];
   }, [formEvaluasiData]);
 
+  const unitOptions = useMemo(() => {
+    const set = new Set<string>();
+    formEvaluasiData?.forEach((record) => {
+      if (record.pengajuan?.unit) set.add(record.pengajuan.unit);
+    });
+    return ["all", ...Array.from(set)];
+  }, [formEvaluasiData]);
+
   const sortedAndFilteredProgres = useMemo<ProgresRecord[]>(() => {
     if (!formEvaluasiData) return [];
 
@@ -168,13 +177,16 @@ export default function FormApproval() {
       const matchesJenis =
         filterJenis === "all" ||
         (record.pengajuan?.jenis?.toLowerCase() ?? "") === filterJenis.toLowerCase();
+      const matchesUnit =
+        filterUnit === "all" ||
+        (record.pengajuan?.unit?.toLowerCase() ?? "") === filterUnit.toLowerCase();
       const matchesSearch =
         (record.kode_form?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false) ||
         (record.pengajuan?.judul?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false);
       const nilai = record.pengajuan?.nilai_pengajuan ?? 0;
       const matchesNilai =
         !isNilaiFilterActive || (nilai >= nilaiFilter[0] && nilai <= nilaiFilter[1]);
-      return matchesStatus && matchesJenis && matchesSearch && matchesNilai;
+      return matchesStatus && matchesJenis && matchesUnit && matchesSearch && matchesNilai;
     });
 
     if (sortConfig) {
@@ -188,7 +200,7 @@ export default function FormApproval() {
     }
 
     return filtered as ProgresRecord[];
-  }, [formEvaluasiData, filterStatus, filterJenis, searchQuery, nilaiFilter, sortConfig]);
+  }, [formEvaluasiData, filterStatus, filterJenis, filterUnit, searchQuery, nilaiFilter, sortConfig]);
 
   const totalPages = Math.ceil(sortedAndFilteredProgres.length / itemsPerPage);
   const paginatedProgres = sortedAndFilteredProgres.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -484,6 +496,12 @@ export default function FormApproval() {
         }))}
         jenisValue={filterJenis}
         onJenisChange={setFilterJenis}
+        unitOptions={unitOptions.map((value) => ({
+          value,
+          label: value === "all" ? "Semua Unit" : value,
+        }))}
+        unitValue={filterUnit}
+        onUnitChange={setFilterUnit}
         nilaiRange={[nilaiRange.min, nilaiRange.max]}
         nilaiValue={nilaiFilter}
         onNilaiChange={setNilaiFilter}

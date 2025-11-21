@@ -32,6 +32,9 @@ interface ProcurementFilterBarProps {
   jenisOptions: Option[];
   jenisValue: string;
   onJenisChange: (value: string) => void;
+  unitOptions?: Option[];
+  unitValue?: string;
+  onUnitChange?: (value: string) => void;
   nilaiRange: [number, number];
   nilaiValue: [number, number];
   onNilaiChange: (value: [number, number]) => void;
@@ -48,6 +51,9 @@ export function ProcurementFilterBar({
   jenisOptions,
   jenisValue,
   onJenisChange,
+  unitOptions = [],
+  unitValue = "all",
+  onUnitChange,
   nilaiRange,
   nilaiValue,
   onNilaiChange,
@@ -103,7 +109,7 @@ export function ProcurementFilterBar({
             <PopoverContent
               side="right"
               align="start"
-              className="w-[375px] grid grid-cols-2 gap-6 rounded-2xl border border-[#E5E7F1] bg-white p-6"
+              className="w-[450px] grid grid-cols-3 gap-6 rounded-2xl border border-[#E5E7F1] bg-white p-6"
             >
               {/* Baris pertama: Status & Jenis */}
               <div className="space-y-1">
@@ -142,8 +148,28 @@ export function ProcurementFilterBar({
                 </Select>
               </div>
 
+              {unitOptions.length > 0 && onUnitChange && (
+                <div className="space-y-2">
+                  <p className="text-xs font-normal text-muted-foreground uppercase tracking-wide">
+                    Bagian / Unit
+                  </p>
+                  <Select value={unitValue} onValueChange={onUnitChange}>
+                    <SelectTrigger className="h-10 rounded-xl bg-muted/40 border border-muted">
+                      <SelectValue placeholder="Semua unit" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {unitOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
               {/* Baris kedua: Nilai Project */}
-              <div className="col-span-2 space-y-2">
+              <div className="col-span-3 space-y-2">
                 <p className="text-xs font-normal text-muted-foreground uppercase tracking-wide">
                   Nilai Project
                 </p>
