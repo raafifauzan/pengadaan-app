@@ -22,6 +22,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useDashboardStats, useDashboardTrends, useDashboardDivisions, useLatestPengajuan } from "@/hooks/useDashboard";
+import { ProcurementFlowChart } from "@/components/ProcurementFlowChart";
 import { format } from "date-fns";
 
 // Helper function untuk format Rupiah
@@ -227,12 +228,10 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Reserved Section for Future Mapping */}
-        <Card className="shadow-lg border-dashed">
-          <CardContent className="flex items-center justify-center h-48">
-            <p className="text-muted-foreground text-sm">
-              Reserved: Peta Mapping Pengadaan (Coming Soon)
-            </p>
+        {/* Procurement Flow Mapping */}
+        <Card className="shadow-lg">
+          <CardContent className="pt-6">
+            <ProcurementFlowChart />
           </CardContent>
         </Card>
 

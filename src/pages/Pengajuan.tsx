@@ -540,7 +540,42 @@ export default function Pengajuan() {
         </Button>
       </div>
 
-      {showForm && <RequestForm onClose={() => setShowForm(false)} />}
+      {showForm && (
+        <RequestForm
+          onClose={() => setShowForm(false)}
+          onSubmit={async (values) => {
+            try {
+              const { error } = await supabase.from("pengajuan").insert({
+                no_surat: values.noSurat,
+                judul: values.judul,
+                jenis: values.jenis,
+                unit: values.unit,
+                nilai_pengajuan: values.nilaiPengajuan,
+                tgl_surat: values.tglSurat,
+                email: values.email,
+                catatan: values.catatan,
+                lampiran_url: values.lampiranUrl,
+                status: "pending",
+              });
+
+              if (error) throw error;
+
+              toast({
+                title: "Berhasil",
+                description: "Pengajuan berhasil dibuat",
+              });
+              setShowForm(false);
+            } catch (error) {
+              console.error(error);
+              toast({
+                title: "Gagal",
+                description: "Gagal membuat pengajuan",
+                variant: "destructive",
+              });
+            }
+          }}
+        />
+      )}
 
       <ProcurementFilterBar
         searchPlaceholder="Cari berdasarkan No Surat, Judul, atau Requestor..."

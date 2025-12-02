@@ -729,7 +729,7 @@ export default function FormApproval() {
                     {(() => {
                       const lampiranUrl =
                         detailDialog.data.pengajuan?.lampiran_url ??
-                        detailDialog.data.lampiran_url ??
+                        (detailDialog.data as any).lampiran_url ??
                         (detailDialog.data as { lampiran?: string }).lampiran ??
                         null;
                       const lampiranLabel =
