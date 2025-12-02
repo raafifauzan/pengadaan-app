@@ -50,7 +50,7 @@ export function TrackingProgressBar({
   return (
     <>
       {/* CSS animasi dimasukkan langsung di sini */}
-      <style jsx global>{`
+      <style>{`
         /* ===== Progress connector effects (self-contained) ===== */
         @keyframes conn-stripes-move {
           0% {

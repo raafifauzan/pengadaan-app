@@ -925,7 +925,7 @@ export default function Pengadaan() {
                         <p className="text-xs text-muted-foreground">
                           Timeline Dokumen
                         </p>
-                        <div className>
+                        <div className="space-y-2">
                           {[
                             {
                               label: "Pengajuan Masuk",

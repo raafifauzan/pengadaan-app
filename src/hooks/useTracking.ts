@@ -92,12 +92,10 @@ export function useTracking() {
       const [pengajuanRes, evaluasiRes, pengadaanRes] = await Promise.all([
         supabase
           .from("pengajuan")
-          .select(
-            "id, judul, status, timestamp, tgl_surat, nilai_pengajuan, unit, no_surat, lampiran_url"
-          )
+          .select("*")
           .order("timestamp", { ascending: false }),
-        supabase.from("form_evaluasi").select("id, pengajuan_id, kode_form, is_final"),
-        supabase.from("pengadaan").select("id, kode_form, form_evaluasi_id, status_pengadaan"),
+        supabase.from("form_evaluasi").select("*"),
+        supabase.from("pengadaan").select("*"),
       ]);
 
       if (pengajuanRes.error) throw pengajuanRes.error;

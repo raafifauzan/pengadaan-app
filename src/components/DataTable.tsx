@@ -48,8 +48,8 @@ export function DataTable<Row, Key extends string>({
                 ? "justify-center"
                 : "justify-start");
             const widthStyle = {
-              width: column.basis ?? column.width,
-              minWidth: column.minWidth ?? column.basis ?? column.width,
+              width: column.basis,
+              minWidth: column.minWidth ?? column.basis,
             };
 
             return (
@@ -105,8 +105,8 @@ export function DataTable<Row, Key extends string>({
                   ? "justify-center"
                   : "justify-start");
               const widthStyle = {
-                width: column.basis ?? column.width,
-                minWidth: column.minWidth ?? column.basis ?? column.width,
+                width: column.basis,
+                minWidth: column.minWidth ?? column.basis,
               };
 
               return (

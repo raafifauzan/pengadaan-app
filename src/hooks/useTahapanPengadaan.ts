@@ -12,7 +12,7 @@ export function useTahapPengadaan(pengadaanId?: string, enabled = true) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("tahap_pengadaan")
-        .select("id, pengadaan_id, nama_tahap, urutan, tanggal_tahap, nilai_fix, catatan")
+        .select("*")
         .eq("pengadaan_id", pengadaanId)
         .order("urutan", { ascending: true });
 
