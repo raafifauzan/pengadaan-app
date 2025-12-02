@@ -11,6 +11,7 @@ import FormApproval from "./pages/FormApproval";
 import Tracking from "./pages/Tracking";
 import Pengadaan from "./pages/Pengadaan";
 import KonfirmasiPembayaran from "./pages/KonfirmasiPembayaran";
+import ProcurementMapping from "./pages/ProcurementMapping";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/tracking" element={<Tracking />} />
+              <Route path="/mapping" element={<ProcurementMapping />} />
               <Route path="/pengajuan" element={<Pengajuan />} />
               <Route path="/evaluasi" element={<FormEvaluasi />} />
               <Route path="/evaluasi/progres" element={<FormApproval />} />

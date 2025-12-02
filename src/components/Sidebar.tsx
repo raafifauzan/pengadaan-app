@@ -18,6 +18,7 @@ const menuItems: MenuItem[] = [
     path: "/",
     subItems: [
       { label: "Tracking Transaksi", path: "/tracking" },
+      { label: "Mapping Pengadaan", path: "/mapping" },
     ],
   },
   {
