@@ -18,7 +18,7 @@ export type Database = {
         Row: {
           action: string
           approver_id: string
-          approver_role: string | null
+          approver_role: Database["public"]["Enums"]["app_role"]
           catatan: string | null
           created_at: string | null
           id: string
@@ -27,7 +27,7 @@ export type Database = {
         Insert: {
           action: string
           approver_id: string
-          approver_role?: string | null
+          approver_role: Database["public"]["Enums"]["app_role"]
           catatan?: string | null
           created_at?: string | null
           id?: string
@@ -36,7 +36,7 @@ export type Database = {
         Update: {
           action?: string
           approver_id?: string
-          approver_role?: string | null
+          approver_role?: Database["public"]["Enums"]["app_role"]
           catatan?: string | null
           created_at?: string | null
           id?: string
@@ -52,7 +52,41 @@ export type Database = {
           },
         ]
       }
-
+      form_approval: {
+        Row: {
+          direktur_date: string | null
+          form_evaluasi_id: string
+          keuangan_date: string | null
+          sekper_date: string | null
+          sevp_operation_date: string | null
+          sevp_support_date: string | null
+        }
+        Insert: {
+          direktur_date?: string | null
+          form_evaluasi_id: string
+          keuangan_date?: string | null
+          sekper_date?: string | null
+          sevp_operation_date?: string | null
+          sevp_support_date?: string | null
+        }
+        Update: {
+          direktur_date?: string | null
+          form_evaluasi_id?: string
+          keuangan_date?: string | null
+          sekper_date?: string | null
+          sevp_operation_date?: string | null
+          sevp_support_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form_approval_form_evaluasi_id_fkey"
+            columns: ["form_evaluasi_id"]
+            isOneToOne: true
+            referencedRelation: "form_evaluasi"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       form_evaluasi: {
         Row: {
           anggaran_hps: number | null
@@ -97,320 +131,57 @@ export type Database = {
           },
         ]
       }
-
-      form_approval: {
-        Row: {
-          direktur_date: string | null
-          form_evaluasi_id: string
-          keuangan_date: string | null
-          sekper_date: string | null
-          sevp_operation_date: string | null
-          sevp_support_date: string | null
-        }
-        Insert: {
-          direktur_date?: string | null
-          form_evaluasi_id: string
-          keuangan_date?: string | null
-          sekper_date?: string | null
-          sevp_operation_date?: string | null
-          sevp_support_date?: string | null
-        }
-        Update: {
-          direktur_date?: string | null
-          form_evaluasi_id?: string
-          keuangan_date?: string | null
-          sekper_date?: string | null
-          sevp_operation_date?: string | null
-          sevp_support_date?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "form_approval_form_evaluasi_id_fkey"
-            columns: ["form_evaluasi_id"]
-            isOneToOne: true
-            referencedRelation: "form_evaluasi"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-
-      LACC: {
-        Row: {
-          faktur_pajak: string | null
-          jenis_project: string | null
-          kelompok_klien: string | null
-          klien: string | null
-          kode_pd: string | null
-          nama_project: string | null
-          nilai_project: number | null
-          no: number
-          pic_wilayah: string | null
-          status_approach: string | null
-          status_invoice: string | null
-          tgl_pengakuan_revenue: string | null
-        }
-        Insert: {
-          faktur_pajak?: string | null
-          jenis_project?: string | null
-          kelompok_klien?: string | null
-          klien?: string | null
-          kode_pd?: string | null
-          nama_project?: string | null
-          nilai_project?: number | null
-          no?: number
-          pic_wilayah?: string | null
-          status_approach?: string | null
-          status_invoice?: string | null
-          tgl_pengakuan_revenue?: string | null
-        }
-        Update: {
-          faktur_pajak?: string | null
-          jenis_project?: string | null
-          kelompok_klien?: string | null
-          klien?: string | null
-          kode_pd?: string | null
-          nama_project?: string | null
-          nilai_project?: number | null
-          no?: number
-          pic_wilayah?: string | null
-          status_approach?: string | null
-          status_invoice?: string | null
-          tgl_pengakuan_revenue?: string | null
-        }
-        Relationships: []
-      }
-
-      Pengadaan: {
-        Row: {
-          "BAGIAN / UNIT": string | null
-          HPS: number | null
-          "JENIS PENGADAAN": string | null
-          "KESESUAIAN WAKTU DAN SPESIFIKASI BARANG": string | null
-          KETERANGAN: string | null
-          "KLASIFIKASI PENGADAAN": string | null
-          "METODE PENGADAAN": string | null
-          "NAMA ANGGARAN": string | null
-          "NEGOSIASI (%)": number | null
-          "NO PROYEK": string
-          "NOMOR PENGAJUAN / FROM EVALUASI": string | null
-          "NOMOR SPK/OPL": string | null
-          PENAWARAN: number | null
-          PROYEK: string | null
-          REALISASI: number | null
-          "REG. ANGGARAN": string | null
-          STATUS: string | null
-          "TANGGAL BAST": string | null
-          "TANGGAL MULAI": string | null
-          "TANGGAL PENGADAAN": string | null
-          "TANGGAL SELESAI": string | null
-          VENDOR: string | null
-        }
-        Insert: {
-          "BAGIAN / UNIT"?: string | null
-          HPS?: number | null
-          "JENIS PENGADAAN"?: string | null
-          "KESESUAIAN WAKTU DAN SPESIFIKASI BARANG"?: string | null
-          KETERANGAN?: string | null
-          "KLASIFIKASI PENGADAAN"?: string | null
-          "METODE PENGADAAN"?: string | null
-          "NAMA ANGGARAN"?: string | null
-          "NEGOSIASI (%)"?: number | null
-          "NO PROYEK": string
-          "NOMOR PENGAJUAN / FROM EVALUASI"?: string | null
-          "NOMOR SPK/OPL"?: string | null
-          PENAWARAN?: number | null
-          PROYEK?: string | null
-          REALISASI?: number | null
-          "REG. ANGGARAN"?: string | null
-          STATUS?: string | null
-          "TANGGAL BAST"?: string | null
-          "TANGGAL MULAI"?: string | null
-          "TANGGAL PENGADAAN"?: string | null
-          "TANGGAL SELESAI"?: string | null
-          VENDOR?: string | null
-        }
-        Update: {
-          "BAGIAN / UNIT"?: string | null
-          HPS?: number | null
-          "JENIS PENGADAAN"?: string | null
-          "KESESUAIAN WAKTU DAN SPESIFIKASI BARANG"?: string | null
-          KETERANGAN?: string | null
-          "KLASIFIKASI PENGADAAN"?: string | null
-          "METODE PENGADAAN"?: string | null
-          "NAMA ANGGARAN"?: string | null
-          "NEGOSIASI (%)"?: number | null
-          "NO PROYEK"?: string
-          "NOMOR PENGAJUAN / FROM EVALUASI"?: string | null
-          "NOMOR SPK/OPL"?: string | null
-          PENAWARAN?: number | null
-          PROYEK?: string | null
-          REALISASI?: number | null
-          "REG. ANGGARAN"?: string | null
-          STATUS?: string | null
-          "TANGGAL BAST"?: string | null
-          "TANGGAL MULAI"?: string | null
-          "TANGGAL PENGADAAN"?: string | null
-          "TANGGAL SELESAI"?: string | null
-          VENDOR?: string | null
-        }
-        Relationships: []
-      }
-
-      pengajuan: {
-        Row: {
-          approved_by_direktur: string | null
-          approved_by_direktur_at: string | null
-          approved_by_sekretaris: string | null
-          approved_by_sekretaris_at: string | null
-          catatan: string | null
-          current_approver_role: string | null
-          email: string | null
-          id: string
-          jenis: string | null
-          judul: string | null
-          lampiran_url: string | null
-          nilai_pengajuan: number
-          no_surat: string | null
-          qc_at: string | null
-          qc_by: string | null
-          status: string | null
-          tgl_surat: string | null
-          timestamp: string
-          unit: string | null
-        }
-        Insert: {
-          approved_by_direktur?: string | null
-          approved_by_direktur_at?: string | null
-          approved_by_sekretaris?: string | null
-          approved_by_sekretaris_at?: string | null
-          catatan?: string | null
-          current_approver_role?: string | null
-          email?: string | null
-          id?: string
-          jenis?: string | null
-          judul?: string | null
-          lampiran_url?: string | null
-          nilai_pengajuan: number
-          no_surat?: string | null
-          qc_at?: string | null
-          qc_by?: string | null
-          status?: string | null
-          tgl_surat?: string | null
-          timestamp?: string
-          unit?: string | null
-        }
-        Update: {
-          approved_by_direktur?: string | null
-          approved_by_direktur_at?: string | null
-          approved_by_sekretaris?: string | null
-          approved_by_sekretaris_at?: string | null
-          catatan?: string | null
-          current_approver_role?: string | null
-          email?: string | null
-          id?: string
-          jenis?: string | null
-          judul?: string | null
-          lampiran_url?: string | null
-          nilai_pengajuan?: number
-          no_surat?: string | null
-          qc_at?: string | null
-          qc_by?: string | null
-          status?: string | null
-          tgl_surat?: string | null
-          timestamp?: string
-          unit?: string | null
-        }
-        Relationships: []
-      }
-
-      "Project LACC": {
-        Row: {
-          jenis_project: string | null
-          kelompok_klien: string | null
-          kode_pd: string
-          nama_project: string | null
-          nilai_project: number | null
-          pic_wilayah: string | null
-          status_approach: string | null
-          tgl_pengakuan_revenue: string | null
-        }
-        Insert: {
-          jenis_project?: string | null
-          kelompok_klien?: string | null
-          kode_pd: string
-          nama_project?: string | null
-          nilai_project?: number | null
-          pic_wilayah?: string | null
-          status_approach?: string | null
-          tgl_pengakuan_revenue?: string | null
-        }
-        Update: {
-          jenis_project?: string | null
-          kelompok_klien?: string | null
-          kode_pd?: string
-          nama_project?: string | null
-          nilai_project?: number | null
-          pic_wilayah?: string | null
-          status_approach?: string | null
-          tgl_pengakuan_revenue?: string | null
-        }
-        Relationships: []
-      }
-
-      // ---------- NEW TABLES ----------
-
       metode_pengadaan: {
         Row: {
+          created_at: string | null
+          deskripsi: string | null
           id: string
           kode: string
           nama_metode: string
-          deskripsi: string | null
-          created_at: string | null
         }
         Insert: {
+          created_at?: string | null
+          deskripsi?: string | null
           id?: string
           kode: string
           nama_metode: string
-          deskripsi?: string | null
-          created_at?: string | null
         }
         Update: {
+          created_at?: string | null
+          deskripsi?: string | null
           id?: string
           kode?: string
           nama_metode?: string
-          deskripsi?: string | null
-          created_at?: string | null
         }
         Relationships: []
       }
-
       pengadaan: {
         Row: {
-          id: string
-          kode_form: string
-          form_evaluasi_id: string
-          metode_id: string
-          status_pengadaan: string | null
           created_at: string | null
           created_by: string | null
+          form_evaluasi_id: string
+          id: string
+          kode_form: string
+          metode_id: string
+          status_pengadaan: string | null
         }
         Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          form_evaluasi_id: string
           id?: string
           kode_form: string
-          form_evaluasi_id: string
           metode_id: string
           status_pengadaan?: string | null
-          created_at?: string | null
-          created_by?: string | null
         }
         Update: {
-          id?: string
-          kode_form?: string
-          form_evaluasi_id?: string
-          metode_id?: string
-          status_pengadaan?: string | null
           created_at?: string | null
           created_by?: string | null
+          form_evaluasi_id?: string
+          id?: string
+          kode_form?: string
+          metode_id?: string
+          status_pengadaan?: string | null
         }
         Relationships: [
           {
@@ -427,52 +198,95 @@ export type Database = {
             referencedRelation: "metode_pengadaan"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "pengadaan_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
         ]
       }
-
+      pengajuan: {
+        Row: {
+          catatan: string | null
+          email: string | null
+          id: string
+          jenis: string | null
+          judul: string | null
+          lampiran_url: string | null
+          nilai_pengajuan: number
+          no_surat: string | null
+          qc_at: string | null
+          qc_by: string | null
+          status: string | null
+          tgl_surat: string | null
+          timestamp: string
+          unit: string | null
+        }
+        Insert: {
+          catatan?: string | null
+          email?: string | null
+          id?: string
+          jenis?: string | null
+          judul?: string | null
+          lampiran_url?: string | null
+          nilai_pengajuan: number
+          no_surat?: string | null
+          qc_at?: string | null
+          qc_by?: string | null
+          status?: string | null
+          tgl_surat?: string | null
+          timestamp?: string
+          unit?: string | null
+        }
+        Update: {
+          catatan?: string | null
+          email?: string | null
+          id?: string
+          jenis?: string | null
+          judul?: string | null
+          lampiran_url?: string | null
+          nilai_pengajuan?: number
+          no_surat?: string | null
+          qc_at?: string | null
+          qc_by?: string | null
+          status?: string | null
+          tgl_surat?: string | null
+          timestamp?: string
+          unit?: string | null
+        }
+        Relationships: []
+      }
       tahap_pengadaan: {
         Row: {
-          id: string
-          pengadaan_id: string
-          nama_tahap: string
-          urutan: number
-          tanggal_tahap: string | null
-          vendor_id: string | null
-          nilai_fix: number | null
           catatan: string | null
           created_at: string | null
           created_by: string | null
+          id: string
+          nama_tahap: string
+          nilai_fix: number | null
+          pengadaan_id: string
+          tanggal_tahap: string | null
+          urutan: number
+          vendor_id: string | null
         }
         Insert: {
-          id?: string
-          pengadaan_id: string
-          nama_tahap: string
-          urutan: number
-          tanggal_tahap?: string | null
-          vendor_id?: string | null
-          nilai_fix?: number | null
           catatan?: string | null
           created_at?: string | null
           created_by?: string | null
+          id?: string
+          nama_tahap: string
+          nilai_fix?: number | null
+          pengadaan_id: string
+          tanggal_tahap?: string | null
+          urutan: number
+          vendor_id?: string | null
         }
         Update: {
-          id?: string
-          pengadaan_id?: string
-          nama_tahap?: string
-          urutan?: number
-          tanggal_tahap?: string | null
-          vendor_id?: string | null
-          nilai_fix?: number | null
           catatan?: string | null
           created_at?: string | null
           created_by?: string | null
+          id?: string
+          nama_tahap?: string
+          nilai_fix?: number | null
+          pengadaan_id?: string
+          tanggal_tahap?: string | null
+          urutan?: number
+          vendor_id?: string | null
         }
         Relationships: [
           {
@@ -489,37 +303,29 @@ export type Database = {
             referencedRelation: "vendor"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "tahap_pengadaan_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
         ]
       }
-
       template_tahapan: {
         Row: {
+          deskripsi: string | null
           id: string
           metode_id: string
-          urutan: number
           nama_tahap: string
-          deskripsi: string | null
+          urutan: number
         }
         Insert: {
+          deskripsi?: string | null
           id?: string
           metode_id: string
-          urutan: number
           nama_tahap: string
-          deskripsi?: string | null
+          urutan: number
         }
         Update: {
+          deskripsi?: string | null
           id?: string
           metode_id?: string
-          urutan?: number
           nama_tahap?: string
-          deskripsi?: string | null
+          urutan?: number
         }
         Relationships: [
           {
@@ -531,80 +337,84 @@ export type Database = {
           },
         ]
       }
-
       user_roles: {
         Row: {
-          id: string
-          user_id: string
-          role: string
           created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
         }
         Insert: {
-          id?: string
-          user_id: string
-          role: string
           created_at?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
         }
         Update: {
-          id?: string
-          user_id?: string
-          role?: string
           created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_roles_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
-
       vendor: {
         Row: {
+          alamat: string | null
+          created_at: string | null
+          email: string | null
           id: string
           kode_vendor: string
-          nama_vendor: string
-          alamat: string | null
           kontak: string | null
-          email: string | null
+          nama_vendor: string
           status_vendor: string | null
-          created_at: string | null
         }
         Insert: {
+          alamat?: string | null
+          created_at?: string | null
+          email?: string | null
           id?: string
           kode_vendor: string
-          nama_vendor: string
-          alamat?: string | null
           kontak?: string | null
-          email?: string | null
+          nama_vendor: string
           status_vendor?: string | null
-          created_at?: string | null
         }
         Update: {
+          alamat?: string | null
+          created_at?: string | null
+          email?: string | null
           id?: string
           kode_vendor?: string
-          nama_vendor?: string
-          alamat?: string | null
           kontak?: string | null
-          email?: string | null
+          nama_vendor?: string
           status_vendor?: string | null
-          created_at?: string | null
         }
         Relationships: []
       }
     }
-
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      handle_approval: {
+        Args: { _action: string; _catatan?: string; _pengajuan_id: string }
+        Returns: Json
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role:
+        | "admin"
+        | "sekretaris_perusahaan"
+        | "direktur"
+        | "staff"
+        | "evaluator"
     }
     CompositeTypes: {
       [_ in never]: never
